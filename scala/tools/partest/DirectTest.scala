@@ -7,9 +7,9 @@ package scala.tools.partest
 
 import scala.tools.nsc._
 import settings.ScalaVersion
-import io.Directory
-import util.{ SourceFile, BatchSourceFile, CommandLineParser }
+import util.{ SourceFile, BatchSourceFile }
 import reporters.{Reporter, ConsoleReporter}
+import scala.tools.cmd.CommandLineParser
 
 /** A class for testing code which is embedded as a string.
  *  It allows for more complete control over settings, compiler
