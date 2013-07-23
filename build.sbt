@@ -25,5 +25,5 @@ libraryDependencies += "org.scala-lang"                 % "scalap"         % "2.
 
 libraryDependencies += "org.scalacheck"                %% "scalacheck"     % "1.10.2-SNAPSHOT"
 
-// libraryDependencies += "org.scala-sbt"                  % "test-interface" % "1.0"
+libraryDependencies += "org.scala-sbt"                  % "test-interface" % "1.0"
 
