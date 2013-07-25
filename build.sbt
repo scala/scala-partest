@@ -1,8 +1,3 @@
-// import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
-// import com.typesafe.tools.mima.plugin.MimaKeys.previousArtifact
-
-// previousArtifact := Some("org.scala-lang" % "partest_2.11.0-M4" % "1.0")
-
 organization := "org.scala-lang"
 
 name := "scala-partest"
@@ -17,16 +12,16 @@ libraryDependencies += "org.apache.ant"                 % "ant"            % "1.
 
 libraryDependencies += "com.googlecode.java-diff-utils" % "diffutils"      % "1.3.0"
 
-// libraryDependencies += "org.scala-tools.testing"        % "test-interface" % "0.5"
-
 libraryDependencies += "org.scala-lang"                 % "scala-xml"      % "2.11.0-M4"
 
 libraryDependencies += "org.scala-lang"                 % "scalap"         % "2.11.0-M4"
 
-libraryDependencies += "org.scalacheck"                %% "scalacheck"     % "1.10.2-SNAPSHOT"
+libraryDependencies += "org.scalacheck"                %% "scalacheck"     % "1.10.1"
 
 libraryDependencies += "org.scala-sbt"                  % "test-interface" % "1.0"
 
+
+// partest.properties
 resourceGenerators in Compile <+= Def.task {
   val props = new java.util.Properties
   props.put("version.number", version.value)
@@ -39,6 +34,8 @@ mappings in (Compile, packageBin) += {
    (baseDirectory.value / "partest.properties") -> "partest.properties"
 }
 
+
+// maven publishing
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
   if (version.value.trim.endsWith("SNAPSHOT"))
@@ -83,3 +80,9 @@ pomExtra := (
     </developer>
   </developers>
 )
+
+// TODO: mima
+// import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
+// import com.typesafe.tools.mima.plugin.MimaKeys.previousArtifact
+// previousArtifact := Some("org.scala-lang" % "partest_2.11.0-M4" % "1.0")
+
