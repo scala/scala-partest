@@ -38,3 +38,48 @@ resourceGenerators in Compile <+= Def.task {
 mappings in (Compile, packageBin) += {
    (baseDirectory.value / "partest.properties") -> "partest.properties"
 }
+
+publishTo := {
+  val nexus = "https://oss.sonatype.org/"
+  if (version.value.trim.endsWith("SNAPSHOT"))
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  else
+    Some("releases" at nexus + "service/local/staging/deploy/maven2")
+}
+
+publishMavenStyle := true
+
+publishArtifact in Test := false
+
+pomIncludeRepository := { _ => false }
+
+pomExtra := (
+  <url>http://www.scala-lang.org/</url>
+  <inceptionYear>2002</inceptionYear>
+  <licenses>
+    <license>
+      <name>BSD-like</name>
+      <url>http://www.scala-lang.org/downloads/license.html
+      </url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:git:git://github.com/scala/scala-partest.git</connection>
+    <url>https://github.com/scala/scala-partest</url>
+  </scm>
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://issues.scala-lang.org/</url>
+  </issueManagement>
+  <developers>
+    <developer>
+      <id>lamp</id>
+      <name>EPFL LAMP</name>
+    </developer>
+    <developer>
+      <id>Typesafe</id>
+      <name>Typesafe, Inc.</name>
+    </developer>
+  </developers>
+)
