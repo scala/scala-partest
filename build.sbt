@@ -7,7 +7,7 @@ organization := "org.scala-lang"
 
 name := "scala-partest"
 
-version := "1.0"
+version := "1.0-RC1"
 
 scalaBinaryVersion := "2.11.0-M4"
 
@@ -27,3 +27,14 @@ libraryDependencies += "org.scalacheck"                %% "scalacheck"     % "1.
 
 libraryDependencies += "org.scala-sbt"                  % "test-interface" % "1.0"
 
+resourceGenerators in Compile <+= Def.task {
+  val props = new java.util.Properties
+  props.put("version.number", version.value)
+  val file = (resourceManaged in Compile).value / "partest.properties"
+  IO.write(props, null, file)
+  Seq(file)
+}
+
+mappings in (Compile, packageBin) += {
+   (baseDirectory.value / "partest.properties") -> "partest.properties"
+}
