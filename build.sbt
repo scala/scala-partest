@@ -4,9 +4,9 @@ name := "scala-partest"
 
 version := "1.0-RC1"
 
-scalaBinaryVersion := "2.11.0-M4"
-
 scalaVersion := "2.11.0-M4"
+
+scalaBinaryVersion := scalaVersion.value
 
 libraryDependencies += "org.apache.ant"                 % "ant"            % "1.8.4"
 
