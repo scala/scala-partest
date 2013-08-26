@@ -2,7 +2,7 @@ organization := "org.scala-lang.modules"
 
 name := "scala-partest"
 
-version := "1.0-RC4"
+version := "1.0-RC5"
 
 
 // dependencies:
