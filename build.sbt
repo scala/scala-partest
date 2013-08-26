@@ -14,7 +14,7 @@ libraryDependencies += "org.scala-sbt"                  % "test-interface" % "1.
 
 libraryDependencies += "org.scalacheck"                %% "scalacheck"     % "1.10.1"
 
-libraryDependencies += "org.scala-lang.modules"        %% "scala-xml"      % "1.0-RC2"
+libraryDependencies += "org.scala-lang.modules"        %% "scala-xml"      % "1.0-RC3"
 
 libraryDependencies += "org.scala-lang"                 % "scalap"         % "2.11.0-M4"
 
