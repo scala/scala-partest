@@ -18,7 +18,7 @@ libraryDependencies += "org.scalacheck"                %% "scalacheck"     % "1.
 
 libraryDependencies += "org.scala-lang.modules"        %% "scala-xml"      % "1.0-RC3"
 
-libraryDependencies += "org.scala-lang"                 % "scalap"         % "2.11.0-M4"
+libraryDependencies += "org.scala-lang"                 % "scalap"         % scalaVersion.value
 
 
 // standard stuff follows:
