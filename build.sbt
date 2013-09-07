@@ -20,6 +20,14 @@ libraryDependencies += "org.scala-lang.modules"        %% "scala-xml"      % "1.
 
 libraryDependencies += "org.scala-lang"                 % "scalap"         % scalaVersion.value
 
+// scalap depends on scala-compiler, which depends (for the scaladoc part) on scala-xml and scala-parser-combinators
+// more precisely, scala-compiler_2.11.0-M5 depends on
+//                      scala-xml_2.11.0-M4 and
+//       scala-parser-combinators_2.11.0-M4,
+// so that we get a binary version incompatibility warning
+// it isn't really a problem, but we should consider doing something about this
+// my preference: modularize scaladoc
+conflictWarning ~= { _.copy(failOnConflict = false) }
 
 // standard stuff follows:
 scalaVersion := "2.11.0-M5"
