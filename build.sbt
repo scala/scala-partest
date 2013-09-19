@@ -25,8 +25,9 @@ libraryDependencies += "org.scala-lang"                 % "scalap"         % sca
 //                      scala-xml_2.11.0-M4 and
 //       scala-parser-combinators_2.11.0-M4,
 // so that we get a binary version incompatibility warning
-// it isn't really a problem, but we should consider doing something about this
-// my preference: modularize scaladoc
+// To fix this, we'll modularize scaladoc to remove the dependency from scala-compiler-core,
+// and use dbuild to replicate the staged build we had originally,
+// so that we don't mix cross-versioned artifacts.
 conflictWarning ~= { _.copy(failOnConflict = false) }
 
 // standard stuff follows:
