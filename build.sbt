@@ -2,7 +2,7 @@ organization := "org.scala-lang.modules"
 
 name := "scala-partest"
 
-version := "1.0-RC5"
+version := "1.0-SNAPSHOT"
 
 // so we don't have to wait for sonatype to synch to maven central when deploying a new module
 resolvers += Resolver.sonatypeRepo("releases")
