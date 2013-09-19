@@ -16,18 +16,26 @@ libraryDependencies += "org.scala-sbt"                  % "test-interface" % "1.
 
 libraryDependencies += "org.scalacheck"                %% "scalacheck"     % "1.10.1"
 
-libraryDependencies += "org.scala-lang.modules"        %% "scala-xml"      % "1.0-RC3"
+libraryDependencies += "org.scala-lang.modules"        %% "scala-xml"      % "1.0-RC4"
 
-libraryDependencies += "org.scala-lang"                 % "scalap"         % "2.11.0-M4"
+libraryDependencies += "org.scala-lang"                 % "scalap"         % scalaVersion.value
 
+// scalap depends on scala-compiler, which depends (for the scaladoc part) on scala-xml and scala-parser-combinators
+// more precisely, scala-compiler_2.11.0-M5 depends on
+//                      scala-xml_2.11.0-M4 and
+//       scala-parser-combinators_2.11.0-M4,
+// so that we get a binary version incompatibility warning
+// it isn't really a problem, but we should consider doing something about this
+// my preference: modularize scaladoc
+conflictWarning ~= { _.copy(failOnConflict = false) }
 
 // standard stuff follows:
-scalaVersion := "2.11.0-M4"
+scalaVersion := "2.11.0-M5"
 
 // NOTE: not necessarily equal to scalaVersion
 // (e.g., during PR validation, we override scalaVersion to validate,
 // but don't rebuild scalacheck, so we don't want to rewire that dependency)
-scalaBinaryVersion := "2.11.0-M4"
+scalaBinaryVersion := "2.11.0-M5"
 
 // don't use for doc scope, scaladoc warnings are not to be reckoned with
 scalacOptions in compile ++= Seq("-optimize", "-Xfatal-warnings", "-feature", "-deprecation", "-unchecked", "-Xlint")
