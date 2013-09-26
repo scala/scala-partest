@@ -4,8 +4,9 @@ organization := "org.scala-lang.modules"
 
 name := "scala-partest"
 
-version := "1.0-SNAPSHOT"
+version := "1.0.0-SNAPSHOT"
 
+// TODO: bump to 1.0.0-RC5 as soon as it's out
 scalaXmlVersion := "1.0-RC4"
 
 // so we don't have to wait for sonatype to synch to maven central when deploying a new module
