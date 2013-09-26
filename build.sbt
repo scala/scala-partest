@@ -1,8 +1,12 @@
+import DependencyKeys.scalaXmlVersion
+
 organization := "org.scala-lang.modules"
 
 name := "scala-partest"
 
 version := "1.0-SNAPSHOT"
+
+scalaXmlVersion := "1.0-RC4"
 
 // so we don't have to wait for sonatype to synch to maven central when deploying a new module
 resolvers += Resolver.sonatypeRepo("releases")
@@ -16,7 +20,7 @@ libraryDependencies += "org.scala-sbt"                  % "test-interface" % "1.
 
 libraryDependencies += "org.scalacheck"                %% "scalacheck"     % "1.10.1"
 
-libraryDependencies += "org.scala-lang.modules"        %% "scala-xml"      % "1.0-RC4"
+libraryDependencies += "org.scala-lang.modules"        %% "scala-xml"      % scalaXmlVersion.value
 
 libraryDependencies += "org.scala-lang"                 % "scalap"         % scalaVersion.value
 
