@@ -39,7 +39,7 @@ scalaVersion := "2.11.0-M5"
 scalaBinaryVersion := "2.11.0-M5"
 
 // don't use for doc scope, scaladoc warnings are not to be reckoned with
-scalacOptions in compile ++= Seq("-optimize", "-Xfatal-warnings", "-feature", "-deprecation", "-unchecked", "-Xlint")
+scalacOptions in (Compile, compile) ++= Seq("-optimize", "-Xfatal-warnings", "-feature", "-deprecation", "-unchecked", "-Xlint")
 
 
 // Generate $name.properties to store our version as well as the scala version used to build
