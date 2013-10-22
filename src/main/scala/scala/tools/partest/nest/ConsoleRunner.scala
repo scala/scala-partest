@@ -19,7 +19,7 @@ class ConsoleRunner(argstr: String) extends {
 } with ConsoleRunnerSpec with Instance {
 
   val suiteRunner = new SuiteRunner (
-    testSourcePath = optSourcePath.map(_.getAbsolutePath) getOrElse PartestDefaults.sourcePath,
+    testSourcePath = optSourcePath getOrElse PartestDefaults.sourcePath,
     fileManager = new FileManager(ClassPath split PathResolver.Environment.javaUserClassPath map (Path(_))), // the script sets up our classpath for us via ant
     updateCheck = optUpdateCheck,
     failed = optFailed)
@@ -112,7 +112,8 @@ class ConsoleRunner(argstr: String) extends {
 
     optTimeout foreach (x => setProp("partest.timeout", x))
 
-    NestUI echo banner
+    if (!isPartestTerse)
+      NestUI echo banner
 
     val partestTests = (
       if (optSelfTest) TestKinds.testsForPartest
