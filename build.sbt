@@ -7,7 +7,7 @@ name := "scala-partest"
 version := "1.0.0-SNAPSHOT"
 
 // TODO: bump to 1.0.0-RC5 as soon as it's out
-scalaXmlVersion := "1.0-RC4"
+scalaXmlVersion := "1.0.0-RC6"
 
 // so we don't have to wait for sonatype to synch to maven central when deploying a new module
 resolvers += Resolver.sonatypeRepo("releases")
@@ -19,29 +19,30 @@ libraryDependencies += "com.googlecode.java-diff-utils" % "diffutils"      % "1.
 
 libraryDependencies += "org.scala-sbt"                  % "test-interface" % "1.0"
 
-libraryDependencies += "org.scalacheck"                %% "scalacheck"     % "1.10.1"
+// mark as intransitive because 1.10.1 released against Scala 2.11.0-M6 has wrong dependencies
+// once we upgrade to M7 the intransitive bit can be dropped
+// however, provided should stay; if one wants to run scalacheck tests it should depend on
+// scalacheck explicitly
+libraryDependencies += "org.scalacheck"                %% "scalacheck"     % "1.10.1" % "provided" intransitive()
 
-libraryDependencies += "org.scala-lang.modules"        %% "scala-xml"      % scalaXmlVersion.value
+// mark all scala dependencies as provided which means one has to explicitly provide them when depending on partest
+// this allows for easy testing of modules (like scala-xml) that provide tested classes themselves and shouldn't
+// pull in an older version of itself
+libraryDependencies += "org.scala-lang.modules"        %% "scala-xml"      % scalaXmlVersion.value % "provided" intransitive()
 
-libraryDependencies += "org.scala-lang"                 % "scalap"         % scalaVersion.value
+libraryDependencies += "org.scala-lang"                 % "scalap"         % scalaVersion.value % "provided" intransitive()
 
-// scalap depends on scala-compiler, which depends (for the scaladoc part) on scala-xml and scala-parser-combinators
-// more precisely, scala-compiler_2.11.0-M5 depends on
-//                      scala-xml_2.11.0-M4 and
-//       scala-parser-combinators_2.11.0-M4,
-// so that we get a binary version incompatibility warning
-// To fix this, we'll modularize scaladoc to remove the dependency from scala-compiler-core,
-// and use dbuild to replicate the staged build we had originally,
-// so that we don't mix cross-versioned artifacts.
-conflictWarning ~= { _.copy(failOnConflict = false) }
+libraryDependencies += "org.scala-lang"                 % "scala-reflect"  % scalaVersion.value % "provided" intransitive()
+
+libraryDependencies += "org.scala-lang"                 % "scala-compiler" % scalaVersion.value % "provided" intransitive()
 
 // standard stuff follows:
-scalaVersion := "2.11.0-M5"
+scalaVersion := "2.11.0-M6"
 
 // NOTE: not necessarily equal to scalaVersion
 // (e.g., during PR validation, we override scalaVersion to validate,
 // but don't rebuild scalacheck, so we don't want to rewire that dependency)
-scalaBinaryVersion := "2.11.0-M5"
+scalaBinaryVersion := "2.11.0-M6"
 
 // don't use for doc scope, scaladoc warnings are not to be reckoned with
 scalacOptions in (Compile, compile) ++= Seq("-optimize", "-Xfatal-warnings", "-feature", "-deprecation", "-unchecked", "-Xlint")
