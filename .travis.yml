@@ -2,7 +2,6 @@ language: scala
 script:
   - sbt ++$TRAVIS_SCALA_VERSION compile
 scala:
-  - 2.11.0-M6
   - 2.11.0-SNAPSHOT
 jdk:
   - oraclejdk6
