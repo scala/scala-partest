@@ -1,3 +1,6 @@
+scala-partest <img src="https://api.travis-ci.org/scala/scala-partest.png"/>
+=============
+
 Partest is the testing framework used to regression-test the Scala compiler and standard library.
 
 The compiler under test is instantiated by partest to compile the test files (or directories)
