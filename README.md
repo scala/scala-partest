@@ -1,4 +1,4 @@
-scala-partest <img src="https://api.travis-ci.org/scala/scala-partest.png"/>
+scala-partest [<img src="https://api.travis-ci.org/scala/scala-partest.png"/>](https://travis-ci.org/scala/scala-partest)
 =============
 
 Partest is the testing framework used to regression-test the Scala compiler and standard library.
