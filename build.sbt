@@ -1,19 +1,22 @@
-import VersionKeys._
+scalaModuleSettings
 
-organization                := "org.scala-lang.modules"
+// To facilitate scripted build of all modules (while we're working on getting dbuild up and running)
+val scalaXmlVersion   = sbt.settingKey[String]("Version to use for the scala-xml dependency.")
 
-name                        := "scala-partest"
+val scalaCheckVersion = sbt.settingKey[String]("Version to use for the scalacheck dependency.")
 
-version                     := "1.0.0-SNAPSHOT"
+name                       := "scala-partest"
 
-scalaVersion                := "2.11.0-M7"
+version                    := "1.0.0-SNAPSHOT"
 
-scalaXmlVersion             := "1.0.0-RC7"
+scalaVersion               := "2.11.0-M8"
 
-scalaCheckVersion           := "1.11.1"
+scalaXmlVersion            := "1.0.0-RC7"
+
+scalaCheckVersion          := "1.11.3"
 
 // used as binary version when compiling against 2.11.0-SNAPSHOT
-snapshotScalaBinaryVersion  := "2.11.0-M7"
+snapshotScalaBinaryVersion := "2.11.0-M8"
 
 // TODO: enable "-Xfatal-warnings" for nightlies,
 // off by default because we don't want to break scala/scala pr validation due to deprecation
@@ -41,5 +44,3 @@ libraryDependencies += "org.scala-lang"                 % "scalap"         % sca
 libraryDependencies += "org.scala-lang"                 % "scala-reflect"  % scalaVersion.value % "provided" intransitive()
 
 libraryDependencies += "org.scala-lang"                 % "scala-compiler" % scalaVersion.value % "provided" intransitive()
-
-// the boilerplate is in standard.sbt
