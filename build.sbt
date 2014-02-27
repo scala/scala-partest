@@ -1,9 +1,6 @@
+import VersionKeys._
+
 scalaModuleSettings
-
-// To facilitate scripted build of all modules (while we're working on getting dbuild up and running)
-val scalaXmlVersion   = sbt.settingKey[String]("Version to use for the scala-xml dependency.")
-
-val scalaCheckVersion = sbt.settingKey[String]("Version to use for the scalacheck dependency.")
 
 name                       := "scala-partest"
 
