@@ -6,14 +6,14 @@ name                       := "scala-partest"
 
 version                    := "1.0.0-SNAPSHOT"
 
-scalaVersion               := "2.11.0-M8"
+scalaVersion               := "2.11.0"
 
-scalaXmlVersion            := "1.0.0-RC7"
+scalaXmlVersion            := "1.0.1"
 
 scalaCheckVersion          := "1.11.3"
 
 // used as binary version when compiling against 2.11.0-SNAPSHOT
-snapshotScalaBinaryVersion := "2.11.0-M8"
+snapshotScalaBinaryVersion := "2.11.0"
 
 // TODO: enable "-Xfatal-warnings" for nightlies,
 // off by default because we don't want to break scala/scala pr validation due to deprecation
