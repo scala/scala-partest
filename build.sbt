@@ -13,7 +13,7 @@ scalaXmlVersion            := "1.0.1"
 scalaCheckVersion          := "1.11.3"
 
 // used as binary version when compiling against 2.12.0-SNAPSHOT
-snapshotScalaBinaryVersion := "2.11.0"
+snapshotScalaBinaryVersion := "2.11"
 
 // TODO remove this after https://github.com/scala/sbt-scala-modules/pull/7
 //      is merged and this build refers to the new plugin.
