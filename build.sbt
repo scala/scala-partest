@@ -31,7 +31,7 @@ scalacOptions in (Compile, compile) ++= Seq("-optimize", "-feature", "-deprecati
 
 // dependencies
 // versions involved in integration builds / that change frequently should be keys, set above!
-libraryDependencies += "org.apache.ant"                 % "ant"            % "1.8.4"
+libraryDependencies += "org.apache.ant"                 % "ant"            % "1.8.4" % "provided"
 
 libraryDependencies += "com.googlecode.java-diff-utils" % "diffutils"      % "1.3.0"
 
