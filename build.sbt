@@ -6,11 +6,11 @@ name                       := "scala-partest"
 
 version                    := "1.0.2-SNAPSHOT"
 
-scalaVersion               := "2.11.0"
+scalaVersion               := "2.11.2"
 
 scalaXmlVersion            := "1.0.1"
 
-scalaCheckVersion          := "1.11.3"
+scalaCheckVersion          := "1.11.4"
 
 // used as binary version when compiling against 2.12.0-SNAPSHOT
 snapshotScalaBinaryVersion := "2.11"
