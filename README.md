@@ -19,14 +19,14 @@ As partest links directly against the compiler being tested, it's cross-versione
 the compiler version that it's intended for. 
 
 There are three ways of invoking partest:
-  - ant (see https://github.com/scala/scala/blob/master/test/build-partest.xml and https://github.com/scala/scala-partest/blob/master/src/main/scala/scala/tools/partest/PartestTask.scala)
+  - ant (see https://github.com/scala/scala/blob/2.11.x/test/build-partest.xml and https://github.com/scala/scala-partest/blob/master/src/main/scala/scala/tools/partest/PartestTask.scala)
   - sbt (http://github.com/scala/scala-partest-interface)
-  - the [test/partest script](https://github.com/scala/scala/blob/master/test/partest), which uses ant to set up the classpath in the same way as the ant task, but then launches [ConsoleRunner](https://github.com/scala/scala-partest/blob/master/src/main/scala/scala/tools/partest/nest/ConsoleRunner.scala) directly.
+  - the [test/partest script](https://github.com/scala/scala/blob/2.11.x/test/partest), which uses ant to set up the classpath in the same way as the ant task, but then launches [ConsoleRunner](https://github.com/scala/scala-partest/blob/master/src/main/scala/scala/tools/partest/nest/ConsoleRunner.scala) directly.
   
 The compiler to be tested must be on the classpath.
 The corresponding jar or class directory is detected by [FileManager::findArtifact](https://github.com/scala/scala-partest/blob/master/src/main/scala/scala/tools/partest/nest/FileManager.scala#L123).
 
-The classpath to run partest is specific to the compiler/libraries under test (script not included here, but see [the main test/partest script](https://github.com/scala/scala/blob/master/test/partest)).
+The classpath to run partest is specific to the compiler/libraries under test (script not included here, but see [the main test/partest script](https://github.com/scala/scala/blob/2.11.x/test/partest)).
 It must provide the scala compiler to be tested and all its dependencies, and of course a compatible version of partest.
 For details on the available arguments, see the  [ConsoleRunner argument spec](https://github.com/scala/scala-partest/blob/master/src/main/scala/scala/tools/partest/nest/ConsoleRunnerSpec.scala).
 Here are some non-obvious useful options:
