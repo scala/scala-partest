@@ -46,6 +46,7 @@ System properties available to tests:
   - `partest.output`: output directory (where classfiles go)
   - `partest.lib`: the path of the library (jar or class dir) being tested
   - `partest.reflect`: the path of scala-reflect (jar or class dir) being tested
+  - `partest.comp`: the path of the compiler (jar or class dir) being tested
   - `partest.cwd`: partest working dir
   - `partest.test-path`
   - `partest.testname`

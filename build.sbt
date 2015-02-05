@@ -6,7 +6,7 @@ name                       := "scala-partest"
 
 version                    := "1.0.3-SNAPSHOT"
 
-scalaVersion               := "2.11.4"
+scalaVersion               := "2.11.5"
 
 scalaXmlVersion            := "1.0.3"
 
