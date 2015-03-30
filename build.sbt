@@ -4,9 +4,9 @@ scalaModuleSettings
 
 name                       := "scala-partest"
 
-version                    := "1.0.6-SNAPSHOT"
+version                    := "1.0.7-SNAPSHOT"
 
-scalaVersion               := "2.11.5"
+scalaVersion               := "2.11.6"
 
 scalaXmlVersion            := "1.0.3"
 
