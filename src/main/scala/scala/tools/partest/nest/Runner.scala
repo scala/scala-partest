@@ -16,7 +16,7 @@ import scala.io.Codec
 import scala.reflect.internal.FatalError
 import scala.reflect.internal.util.ScalaClassLoader
 import scala.sys.process.{ Process, ProcessLogger }
-import scala.tools.nsc.Properties.{ envOrElse, isWin, jdkHome, javaHome, propOrElse, propOrEmpty, setProp, versionMsg, javaVmName, javaVmVersion, javaVmInfo }
+import scala.tools.nsc.Properties.{ envOrNone, isWin, jdkHome, javaHome, propOrEmpty, setProp, versionMsg, javaVmName, javaVmVersion, javaVmInfo }
 import scala.tools.nsc.{ Settings, CompilerCommand, Global }
 import scala.tools.nsc.io.{ AbstractFile }
 import scala.tools.nsc.reporters.ConsoleReporter
@@ -74,6 +74,9 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner) {
   val testIdent  = testFile.testIdent // e.g. pos/t1234
 
   lazy val outDir = { outFile.mkdirs() ; outFile }
+
+  // oh boy...
+  private lazy val antLauncher = SFile(Path(envOrNone("ANT_HOME") getOrElse "/opt/ant/") / "lib/ant-launcher.jar")
 
   type RanOneTest = (Boolean, LogContext)
 
@@ -293,7 +296,7 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner) {
   def gitDiff(f1: File, f2: File): Option[String] = {
     try gitRunner map { git =>
       val cmd  = s"$git diff $gitDiffOptions $f1 $f2"
-      val diff = Process(cmd).lines_!.drop(4).map(_ + "\n").mkString
+      val diff = Process(cmd).lineStream_!.drop(4).map(_ + "\n").mkString
 
       "\n" + diff
     }
@@ -510,16 +513,13 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner) {
 
   // Apache Ant 1.6 or newer
   def ant(args: Seq[String], output: File): Boolean = {
-    val antDir = Directory(envOrElse("ANT_HOME", "/opt/ant/"))
-    val antLibDir = Directory(antDir / "lib")
-    val antLauncherPath = SFile(antLibDir / "ant-launcher.jar").path
     val antOptions =
       if (NestUI._verbose) List("-verbose", "-noinput")
       else List("-noinput")
     val cmd = javaCmdPath +: (
       PartestDefaults.javaOpts.split(' ').map(_.trim).filter(_ != "") ++ Seq(
         "-classpath",
-        antLauncherPath,
+        antLauncher.path,
         "org.apache.tools.ant.launch.Launcher"
       ) ++ antOptions ++ args
     )
