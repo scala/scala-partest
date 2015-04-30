@@ -12,18 +12,6 @@ scalaXmlVersion            := "1.0.3"
 
 scalaCheckVersion          := "1.11.3"
 
-// used as binary version when compiling against 2.12.0-SNAPSHOT
-snapshotScalaBinaryVersion := "2.11"
-
-// TODO remove this after https://github.com/scala/sbt-scala-modules/pull/7
-//      is merged and this build refers to the new plugin.
-scalaBinaryVersion := (
-  if (scalaVersion.value.startsWith("2.12"))
-    snapshotScalaBinaryVersion.value
-  else
-    scalaBinaryVersion.value
-)
-
 // TODO: enable "-Xfatal-warnings" for nightlies,
 // off by default because we don't want to break scala/scala pr validation due to deprecation
 // don't use for doc scope, scaladoc warnings are not to be reckoned with
@@ -50,3 +38,5 @@ libraryDependencies += "org.scala-lang"                 % "scalap"         % sca
 libraryDependencies += "org.scala-lang"                 % "scala-reflect"  % scalaVersion.value % "provided" intransitive()
 
 libraryDependencies += "org.scala-lang"                 % "scala-compiler" % scalaVersion.value % "provided" intransitive()
+
+mimaPreviousVersion := Some("1.0.5")
