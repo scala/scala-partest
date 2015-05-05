@@ -1,4 +1,4 @@
-scala-partest [<img src="https://api.travis-ci.org/scala/scala-partest.png"/>](https://travis-ci.org/scala/scala-partest)
+scala-partest [<img src="https://img.shields.io/travis/scala/scala-partest.svg"/>](https://travis-ci.org/scala/scala-partest) [<img src="https://img.shields.io/maven-central/v/org.scala-lang.modules/scala-partest_2.11.svg?label=latest%20release%20for%202.11"/>](http://search.maven.org/#search%7Cga%7C1%7Cg%3Aorg.scala-lang.modules%20a%3Ascala-partest_2.11) [<img src="https://img.shields.io/maven-central/v/org.scala-lang.modules/scala-partest_2.12*.svg?label=latest%20release%20for%202.12"/>](http://search.maven.org/#search%7Cga%7C1%7Cg%3Aorg.scala-lang.modules%20a%3Ascala-partest_2.12*)
 =============
 
 Partest is the testing framework used to regression-test the Scala compiler and standard library.
