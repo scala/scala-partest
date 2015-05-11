@@ -6,11 +6,13 @@ name                       := "scala-partest"
 
 version                    := "1.0.8-SNAPSHOT"
 
-scalaVersion               := "2.11.6"
+scalaVersion               := crossScalaVersions.value.head
 
-scalaXmlVersion            := "1.0.3"
+crossScalaVersions         := Seq("2.11.6", "2.12.0-M1")
 
-scalaCheckVersion          := "1.11.3"
+scalaXmlVersion            := "1.0.4"
+
+scalaCheckVersion          := "1.11.6"
 
 // TODO: enable "-Xfatal-warnings" for nightlies,
 // off by default because we don't want to break scala/scala pr validation due to deprecation
