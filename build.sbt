@@ -4,11 +4,19 @@ scalaModuleSettings
 
 name                       := "scala-partest"
 
-version                    := "1.0.8-SNAPSHOT"
+version                    := "1.0.9-SNAPSHOT"
 
 scalaVersion               := crossScalaVersions.value.head
 
-crossScalaVersions         := Seq("2.11.6", "2.12.0-M1")
+crossScalaVersions         := {
+  val java = System.getProperty("java.version")
+  if (java.startsWith("1.6."))
+    Seq("2.11.6", "2.12.0-M1")
+  else if (java.startsWith("1.8."))
+    Seq("2.12.0-M2")
+  else
+    sys.error(s"don't know what Scala versions to build on $java")
+}
 
 scalaXmlVersion            := "1.0.4"
 
