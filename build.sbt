@@ -4,7 +4,7 @@ scalaModuleSettings
 
 name                       := "scala-partest"
 
-version                    := "1.0.9-SNAPSHOT"
+version                    := "1.0.10-SNAPSHOT"
 
 scalaVersion               := crossScalaVersions.value.head
 
