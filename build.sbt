@@ -22,10 +22,17 @@ scalaXmlVersion            := "1.0.4"
 
 scalaCheckVersion          := "1.11.6"
 
-// TODO: enable "-Xfatal-warnings" for nightlies,
-// off by default because we don't want to break scala/scala pr validation due to deprecation
-// don't use for doc scope, scaladoc warnings are not to be reckoned with
-scalacOptions in (Compile, compile) ++= Seq("-optimize", "-feature", "-deprecation", "-unchecked", "-Xlint")
+// TODO: eliminate "-deprecation:false" for nightlies,
+//   included by default because we don't want to break scala/scala pr validation
+// don't use -Xfatal-warnings for doc scope, scaladoc warnings are not to be reckoned with
+scalacOptions in (Compile, compile) ++=
+  Seq("-feature", "-deprecation:false", "-unchecked", "-Xlint", "-Xfatal-warnings") ++
+  (CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, scalaMajor)) if scalaMajor < 12 =>
+      Seq("-optimize")
+    case _ =>
+      Seq()  // maybe "-Yopt:l:classpath" eventually?
+  })
 
 // dependencies
 // versions involved in integration builds / that change frequently should be keys, set above!
