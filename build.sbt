@@ -24,8 +24,7 @@ scalaCheckVersion          := "1.11.6"
 
 // TODO: eliminate "-deprecation:false" for nightlies,
 //   included by default because we don't want to break scala/scala pr validation
-// don't use -Xfatal-warnings for doc scope, scaladoc warnings are not to be reckoned with
-scalacOptions in (Compile, compile) ++=
+scalacOptions ++=
   Seq("-feature", "-deprecation:false", "-unchecked", "-Xlint", "-Xfatal-warnings") ++
   (CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, scalaMajor)) if scalaMajor < 12 =>
