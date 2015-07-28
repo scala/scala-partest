@@ -312,7 +312,7 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner) {
    *
    *  File paths are detected using the absolute path of the test root.
    *  A string that looks like a file path is normalized by replacing
-   *  the leading segments (the root) with "$ROOT" and by replacing
+   *  the leading segments (the root) with "\$ROOT" and by replacing
    *  any Windows backslashes with the one true file separator char.
    */
   def normalizeLog() {
@@ -765,7 +765,7 @@ class SuiteRunner(
 
   def banner = {
     val baseDir = fileManager.compilerUnderTest.parent.toString
-    def relativize(path: String) = path.replace(baseDir, "$baseDir").replace(PathSettings.srcDir.toString, "$sourceDir")
+    def relativize(path: String) = path.replace(baseDir, s"$$baseDir").replace(PathSettings.srcDir.toString, "$sourceDir")
     val vmBin  = javaHome + fileSeparator + "bin"
     val vmName = "%s (build %s, %s)".format(javaVmName, javaVmVersion, javaVmInfo)
 
