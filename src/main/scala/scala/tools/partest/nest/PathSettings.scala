@@ -50,7 +50,8 @@ object PathSettings {
 
   // Directory <root>/build
   private def buildDir: Directory = {
-    val bases      = testRoot :: testRoot.parents
+    // In the classic "ant" build, the relevant subdirectory is test's sibling ../build, so try there first.
+    val bases = testRoot.parent :: testRoot :: testRoot.parent.parents
     // In the classic "ant" build, the relevant subdirectory is called build,
     // but in the postmodern "sbt" build, it is called target.  Look for both.
     val dirs = Path.onlyDirs(bases flatMap (x => List(x / "build", x / "target")))
