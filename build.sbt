@@ -4,7 +4,7 @@ scalaModuleSettings
 
 name                       := "scala-partest"
 
-version                    := "1.0.10-SNAPSHOT"
+version                    := "1.0.11-SNAPSHOT"
 
 scalaVersion               := crossScalaVersions.value.head
 
@@ -55,4 +55,4 @@ libraryDependencies += "org.scala-lang"                 % "scala-reflect"  % sca
 
 libraryDependencies += "org.scala-lang"                 % "scala-compiler" % scalaVersion.value % "provided" intransitive()
 
-mimaPreviousVersion := Some("1.0.5")
+mimaPreviousVersion := Some("1.0.10")
