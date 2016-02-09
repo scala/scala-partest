@@ -13,13 +13,13 @@ crossScalaVersions         := {
   if (java.startsWith("1.6."))
     Seq("2.11.7", "2.12.0-M1")
   else if (java.startsWith("1.8."))
-    Seq("2.12.0-M2", "2.12.0-M3")
+    Seq("2.12.0-M3")
   else
     sys.error(s"don't know what Scala versions to build on $java")
 }
 
 scalaXmlVersion            := {
-  if(scalaVersion.value == "2.12.0-M3") "1.0.5" else "1.0.4"
+  if(scalaVersion.value.startsWith("2.11.") || scalaVersion.value == "2.12.0-M2") "1.0.4" else "1.0.5"
 }
 
 scalaCheckVersion          := "1.11.6"
