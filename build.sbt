@@ -1,10 +1,12 @@
 import VersionKeys._
+import com.typesafe.tools.mima.core.{IncompatibleMethTypeProblem, ProblemFilters}
+import com.typesafe.tools.mima.plugin.MimaKeys
 
 scalaModuleSettings
 
 name                       := "scala-partest"
 
-version                    := "1.0.12-SNAPSHOT"
+version                    := "1.0.13-SNAPSHOT"
 
 scalaVersion               := crossScalaVersions.value.head
 
@@ -57,4 +59,4 @@ libraryDependencies += "org.scala-lang"                 % "scala-reflect"  % sca
 
 libraryDependencies += "org.scala-lang"                 % "scala-compiler" % scalaVersion.value % "provided" intransitive()
 
-mimaPreviousVersion := Some("1.0.10")
+mimaPreviousVersion := Some("1.0.11")
