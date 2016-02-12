@@ -42,7 +42,7 @@ Here are some non-obvious useful options:
 
 ### Historical Note
 
-These instructions are valid as of Partest 1.0.13. Prior to that release, SBT users required `sbt-partest-interface` in addition to `scala-partest`. The test framework class used to be `scala.tools.partest.Framework`, whereas now it is  `scala.tools.partest.sbt.Framework`)
+These instructions are valid as of Partest 1.0.13. Prior to that release, SBT users required `scala-partest-interface` in addition to `scala-partest`. The test framework class used to be `scala.tools.partest.Framework`, whereas now it is  `scala.tools.partest.sbt.Framework`)
 
 ### Instructions
 
