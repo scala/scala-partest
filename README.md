@@ -22,7 +22,7 @@ the compiler version that it's intended for.
 There are three ways of invoking partest:
 
   - ant (see https://github.com/scala/scala/blob/2.11.x/test/build-partest.xml and https://github.com/scala/scala-partest/blob/master/src/main/scala/scala/tools/partest/PartestTask.scala)
-  - sbt (http://github.com/scala/scala-partest-interface)
+  - sbt (details below)
   - the [test/partest script](https://github.com/scala/scala/blob/2.11.x/test/partest), which uses ant to set up the classpath in the same way as the ant task, but then launches [ConsoleRunner](https://github.com/scala/scala-partest/blob/master/src/main/scala/scala/tools/partest/nest/ConsoleRunner.scala) directly.
 
 The compiler to be tested must be on the classpath.
@@ -38,7 +38,38 @@ Here are some non-obvious useful options:
   - `-Dpartest.scalac_opts=...` -> add compiler options
   - `-Dpartest.debug=true` -> print debug messages
 
-Advanced usage:
+## SBT usage
+
+### Historical Note
+
+These instructions are valid as of Partest 1.0.13. Prior to that release, SBT users required `sbt-partest-interface` in addition to `scala-partest`. The test framework class used to be `scala.tools.partest.Framework`, whereas now it is  `scala.tools.partest.sbt.Framework`)
+
+### Instructions
+
+To sbt test your project with partest through this testing interface, add something like this to your build.sbt:
+
+```
+libraryDependencies += "org.scala-lang.modules" %% "scala-partest" % "1.0.13" % "test" // or newer
+
+fork in Test := true
+
+javaOptions in Test += "-Xmx1G"
+
+testFrameworks += new TestFramework("scala.tools.partest.sbt.Framework")
+
+definedTests in Test += (
+  new sbt.TestDefinition(
+    "partest",
+    // marker fingerprint since there are no test classes
+    // to be discovered by sbt:
+    new sbt.testing.AnnotatedFingerprint {
+      def isModule = true
+      def annotationName = "partest"
+    }, true, Array())
+  )
+```
+
+## Advanced usage:
 
   - tests may consist of multiple files (the test name is the directory's name),
     and files (including java sources) in that directory are compiled in order by looking
@@ -46,7 +77,7 @@ Advanced usage:
   - jars in `test/files/lib` are expected to be on the classpath and may be used by tests
   - certain kinds of tests (scalacheck/instrumented/specialized) add additional jars to the classpath
 
-System properties available to tests:
+## System properties available to tests:
 
   - `partest.output`: output directory (where classfiles go)
   - `partest.lib`: the path of the library (jar or class dir) being tested
