@@ -9,19 +9,10 @@
 package scala.tools.partest
 package nest
 
-import sbt.testing.EventHandler
-import sbt.testing.Logger
-import sbt.testing.Event
-import sbt.testing.Fingerprint
-import sbt.testing.Selector
-import sbt.testing.Status
-import sbt.testing.OptionalThrowable
-import sbt.testing.SuiteSelector
-import sbt.testing.TestSelector
+import _root_.sbt.testing._
 import java.net.URLClassLoader
 import TestState._
 
-// called reflectively from scala-partest-test-interface
 class SBTRunner(partestFingerprint: Fingerprint, eventHandler: EventHandler, loggers: Array[Logger],
     srcDir: String, testClassLoader: URLClassLoader, javaCmd: File, javacCmd: File, scalacArgs: Array[String], args: Array[String])
     extends AbstractRunner(args.filter(a => !a.startsWith("-D")).mkString(" ")) {
