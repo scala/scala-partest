@@ -73,25 +73,34 @@ object NestUI {
     f"$word $testNumber - $testIdent%-40s$reasonString"
   }
 
-  def reportTest(state: TestState) = {
+  def reportTest(state: TestState, info: TestInfo) =
     if (isTerse && state.isOk) {
       if (dotCount >= DotWidth) {
         outline("\n.")
         dotCount = 1
-      }
-      else {
+      } else {
         outline(".")
         dotCount += 1
       }
-    }
-    else {
+    } else {
       echo(statusLine(state))
-      if (!state.isOk && isDiffy) {
-        val differ = bold(red("% ")) + "diff "
-        state.transcript find (_ startsWith differ) foreach (echo(_))
+      if (!state.isOk) {
+        def showLog() = if (info.logFile.canRead) {
+          echo(bold(cyan(s"##### Log file '${info.logFile}' from failed test #####\n")))
+          echo(info.logFile.fileContents)
+        }
+        if (isDiffy) {
+          val differ = bold(red("% ")) + "diff "
+          val diffed = state.transcript find (_ startsWith differ)
+          diffed match {
+            case Some(diff) => echo(diff)
+            case None if !isLogging && !isPartestVerbose => showLog()
+            case _ => ()
+          }
+        }
+        if (isLogging) showLog()
       }
     }
-  }
 
   def echo(message: String): Unit = synchronized {
     leftFlush()
@@ -153,11 +162,13 @@ object NestUI {
   var _debug = false
   var _terse = false
   var _diff  = false
+  var _logging = false
 
   def isVerbose = _verbose
   def isDebug = _debug
   def isTerse = _terse
   def isDiffy = _diff
+  def isLogging = _logging
 
   def setVerbose() {
     _verbose = true
@@ -170,6 +181,9 @@ object NestUI {
   }
   def setDiffOnFail() {
     _diff = true
+  }
+  def setLogOnFail() {
+    _logging = true
   }
   def verbose(msg: String) {
     if (isVerbose)
