@@ -6,24 +6,40 @@
 **                          |/                                          **
 \*                                                                      */
 
-package scala.tools.partest
-package nest
+package scala.tools.partest.sbt
+
+import java.net.URLClassLoader
 
 import _root_.sbt.testing._
-import java.net.URLClassLoader
-import TestState._
 
-class SBTRunner(partestFingerprint: Fingerprint, eventHandler: EventHandler, loggers: Array[Logger],
-    srcDir: String, testClassLoader: URLClassLoader, javaCmd: File, javacCmd: File, scalacArgs: Array[String], args: Array[String])
-    extends AbstractRunner(args.filter(a => !a.startsWith("-D")).mkString(" ")) {
+import scala.tools.partest.TestState._
+import scala.tools.partest._
+import scala.tools.partest.nest.{AbstractRunner, FileManager, RunnerSpec, SuiteRunner}
+
+class SBTRunner(val config: RunnerSpec.Config,
+                partestFingerprint: Fingerprint, eventHandler: EventHandler, loggers: Array[Logger],
+                srcDir: String, testClassLoader: URLClassLoader, javaCmd: File, javacCmd: File,
+                scalacArgs: Array[String], args: Array[String]) extends AbstractRunner {
 
   // no summary, SBT will do that for us
-  printSummary = false
-  partestCmd   = "partest"
+  override protected val printSummary = false
+  override protected val partestCmd   = "partest"
 
   val defs = {
     val Def = "-D([^=]*)=(.*)".r
     args.collect { case Def(k, v) => (k, v) }
+  }
+
+  // Enable colors if there's an explicit override or all loggers support them
+  override protected val colorEnabled = {
+    val ptOverride = defs.collect { case ("partest.colors", v) => v.toBoolean }.lastOption
+    ptOverride.getOrElse {
+      val sbtOverride1 = sys.props.get("sbt.log.format").map(_.toBoolean)
+      val sbtOverride2 = sys.props.get("sbt.log.noformat").map(s => !s.toBoolean)
+      sbtOverride1.orElse(sbtOverride2).getOrElse {
+        loggers.forall(_.ansiCodesSupported())
+      }
+    }
   }
 
   val javaOpts = {
@@ -38,11 +54,12 @@ class SBTRunner(partestFingerprint: Fingerprint, eventHandler: EventHandler, log
     else l.mkString(" ")
   }
 
-  override val suiteRunner = new SuiteRunner(
-    testSourcePath = optSourcePath orElse Option(srcDir) getOrElse PartestDefaults.sourcePath,
+  val suiteRunner = new SuiteRunner(
+    testSourcePath = config.optSourcePath orElse Option(srcDir) getOrElse PartestDefaults.sourcePath,
     new FileManager(testClassLoader = testClassLoader),
-    updateCheck = optUpdateCheck,
-    failed  = optFailed,
+    updateCheck = config.optUpdateCheck,
+    failed  = config.optFailed,
+    nestUI = nestUI,
     javaCmdPath = Option(javaCmd).map(_.getAbsolutePath) getOrElse PartestDefaults.javaCmd,
     javacCmdPath = Option(javacCmd).map(_.getAbsolutePath) getOrElse PartestDefaults.javacCmd,
     scalacExtraArgs = scalacArgs,
