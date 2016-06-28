@@ -582,8 +582,8 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
 
     def runInFramework(): Boolean = {
       import org.scalatools.testing._
-      // getClass.getClassLoader.instantiate[Framework]("org.scalacheck.ScalaCheckFramework")
-      val f: Framework = new org.scalacheck.ScalaCheckFramework
+      // scalacheck is provided on the classpath (during RC cycle, as part of partest-extras)
+      val f: Framework = getClass.getClassLoader.instantiate[Framework]("org.scalacheck.ScalaCheckFramework")
       val logger = new Logger {
         def ansiCodesSupported  = false //params.env.isSet("colors")
         def error(msg: String)  = logWriter println msg
