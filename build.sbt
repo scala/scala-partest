@@ -4,34 +4,20 @@ scalaModuleSettings
 
 name                       := "scala-partest"
 
-version                    := "1.0.13-SNAPSHOT"
+version                    := "1.0.18-SNAPSHOT"
 
 scalaVersion               := crossScalaVersions.value.head
 
-crossScalaVersions         := {
-  val java = System.getProperty("java.version")
-  if (java.startsWith("1.6."))
-    Seq("2.11.7", "2.12.0-M1")
-  else if (java.startsWith("1.8."))
-    Seq("2.12.0-M4")
-  else
-    sys.error(s"don't know what Scala versions to build on $java")
-}
+crossScalaVersions         := Seq("2.12.0-M5")
 
-scalaXmlVersion            := {
-  if(scalaVersion.value.startsWith("2.11.") || scalaVersion.value == "2.12.0-M2") "1.0.4" else "1.0.5"
-}
+scalaXmlVersion            := "1.0.5"
+
 
 // TODO: eliminate "-deprecation:false" for nightlies,
 //   included by default because we don't want to break scala/scala pr validation
-scalacOptions ++=
-  Seq("-feature", "-deprecation:false", "-unchecked", "-Xlint", "-Xfatal-warnings") ++
-  (CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, scalaMajor)) if scalaMajor < 12 =>
-      Seq("-optimize")
-    case _ =>
-      Seq()  // maybe "-Yopt:l:classpath" eventually?
-  })
+scalacOptions ++= Seq("-feature", "-unchecked", "-Xlint", "-Xfatal-warnings")
+
+scalacOptions += "-opt:l:classpath"
 
 // dependencies
 // versions involved in integration builds / that change frequently should be keys, set above!
