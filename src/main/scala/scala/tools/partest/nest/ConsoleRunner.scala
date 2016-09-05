@@ -9,7 +9,7 @@ package nest
 class ConsoleRunner(val config: RunnerSpec.Config) extends AbstractRunner {
   val suiteRunner = new SuiteRunner (
     testSourcePath = config.optSourcePath getOrElse PartestDefaults.sourcePath,
-    fileManager = new FileManager(ClassPath split PathResolver.Environment.javaUserClassPath map (Path(_))), // the script sets up our classpath for us via ant
+    fileManager = new FileManager(ClassPath split PathResolver.Environment.javaUserClassPath map (Path(_))), // the script sets up our classpath for us via sbt
     updateCheck = config.optUpdateCheck,
     failed = config.optFailed,
     nestUI = nestUI)

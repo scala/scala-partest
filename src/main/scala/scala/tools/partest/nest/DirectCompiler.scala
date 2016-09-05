@@ -43,7 +43,6 @@ class DirectCompiler(val runner: Runner) {
   /** Massage args to merge plugins and fix paths.
    *  Plugin path can be relative to test root, or cwd is out.
    *  While we're at it, mix in the baseline options, too.
-   *  That's how ant passes in the plugins dir.
    */
   private def updatePluginPath(args: List[String], out: AbstractFile, srcdir: AbstractFile): Seq[String] = {
     val dir = PathSettings.testRoot
