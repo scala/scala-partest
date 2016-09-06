@@ -716,12 +716,6 @@ class Runner(val testFile: File, val suiteRunner: AbstractRunner, val nestUI: Ne
 
 }
 
-/** Loads `library.properties` from the jar. */
-object Properties extends scala.util.PropertiesTrait {
-  protected def propCategory    = "partest"
-  protected def pickJarBasedOn  = classOf[Runner]
-}
-
 case class TimeoutException(duration: Duration) extends RuntimeException
 
 class LogContext(val file: File, val writers: Option[(StringWriter, PrintWriter)])

@@ -7,10 +7,9 @@ package scala.tools
 package partest
 package nest
 
-import utils.Properties._
-import scala.tools.nsc.Properties.{ versionMsg, propOrFalse, setProp }
+import scala.tools.nsc.Properties.versionMsg
 import scala.collection.{ mutable, immutable }
-import scala.util.{ Try, Success, Failure }
+import scala.util.{ Try, Success, Failure, Properties }
 import scala.reflect.internal.util.Collections.distinctBy
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.NANOSECONDS
@@ -33,7 +32,7 @@ abstract class AbstractRunner {
 
   lazy val nestUI: NestUI = new NestUI(
     verbose = config.optVerbose,
-    debug = config.optDebug || propOrFalse("partest.debug"),
+    debug = config.optDebug || Properties.propOrFalse("partest.debug"),
     terse = config.optTerse,
     diffOnFail = config.optShowDiff,
     logOnFail = config.optShowLog,
@@ -125,7 +124,7 @@ abstract class AbstractRunner {
           echoWarning(s"Discarding ${invalid.size} invalid test paths")
       }
 
-      config.optTimeout foreach (x => setProp("partest.timeout", x))
+      config.optTimeout foreach (x => Properties.setProp("partest.timeout", x))
 
       if (!nestUI.terse)
         nestUI.echo(banner)
@@ -167,7 +166,7 @@ abstract class AbstractRunner {
       val grouped = (allTests groupBy PathSettings.kindOf).toArray sortBy (x => PathSettings.standardKinds indexOf x._1)
 
       totalTests = allTests.size
-      expectedFailures = propOrNone("partest.errors") match {
+      expectedFailures = Properties.propOrNone("partest.errors") match {
         case Some(num)  => num.toInt
         case _          => 0
       }
@@ -201,8 +200,8 @@ abstract class AbstractRunner {
   def banner = {
     val baseDir = fileManager.compilerUnderTest.parent.toString
     def relativize(path: String) = path.replace(baseDir, s"$$baseDir").replace(pathSettings.srcDir.toString, "$sourceDir")
-    val vmBin  = javaHome + fileSeparator + "bin"
-    val vmName = "%s (build %s, %s)".format(javaVmName, javaVmVersion, javaVmInfo)
+    val vmBin  = Properties.javaHome + fileSeparator + "bin"
+    val vmName = "%s (build %s, %s)".format(Properties.javaVmName, Properties.javaVmVersion, Properties.javaVmInfo)
 
     s"""|Partest version:     ${Properties.versionNumberString}
         |Compiler under test: ${relativize(fileManager.compilerUnderTest.getAbsolutePath)}
