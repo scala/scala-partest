@@ -10,29 +10,27 @@ package nest
 import scala.tools.nsc.Properties.versionMsg
 import scala.collection.{ mutable, immutable }
 import scala.util.{ Try, Success, Failure, Properties }
+import scala.concurrent.duration.Duration
 import scala.reflect.internal.util.Collections.distinctBy
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.NANOSECONDS
 
-abstract class AbstractRunner {
+class SuiteRunner(val config: RunnerSpec.Config, val fileManager: FileManager) {
 
-  val config: RunnerSpec.Config
-  val fileManager: FileManager
-  val pathSettings: PathSettings
-
+  val pathSettings = new PathSettings(config.optSourcePath getOrElse config.props.sourcePath, config.props.root)
   val updateCheck: Boolean = config.optUpdateCheck
   val failed: Boolean = config.optFailed
-  val javaCmdPath: String = PartestDefaults.javaCmd
-  val javacCmdPath: String = PartestDefaults.javacCmd
+  val javaCmdPath: String = config.props.javaCmd
+  val javacCmdPath: String = config.props.javacCmd
   val scalacExtraArgs: Seq[String] = Seq.empty
-  val javaOpts: String = PartestDefaults.javaOpts
-  val scalacOpts: String = PartestDefaults.scalacOpts
+  val javaOpts: String = config.props.javaOpts
+  val scalacOpts: String = config.props.scalacOpts
 
   setUncaughtHandler
 
   lazy val nestUI: NestUI = new NestUI(
     verbose = config.optVerbose,
-    debug = config.optDebug || Properties.propOrFalse("partest.debug"),
+    debug = config.optDebug || config.props.debug,
     terse = config.optTerse,
     diffOnFail = config.optShowDiff,
     logOnFail = config.optShowLog,
@@ -41,7 +39,7 @@ abstract class AbstractRunner {
 
   protected val printSummary         = true
   protected val partestCmd           = "test/partest"
-  protected val colorEnabled         = sys.props contains "partest.colors"
+  protected val colorEnabled         = config.props.colors
 
   private[this] var totalTests       = 0
   private[this] val passedTests      = mutable.ListBuffer[TestState]()
@@ -49,7 +47,7 @@ abstract class AbstractRunner {
 
   private[this] var summarizing      = false
   private[this] var elapsedMillis    = 0L
-  private[this] var expectedFailures = 0
+  private[this] var expectedFailures = config.props.errorCount
 
   import nestUI._
   import nestUI.color._
@@ -124,8 +122,6 @@ abstract class AbstractRunner {
           echoWarning(s"Discarding ${invalid.size} invalid test paths")
       }
 
-      config.optTimeout foreach (x => Properties.setProp("partest.timeout", x))
-
       if (!nestUI.terse)
         nestUI.echo(banner)
 
@@ -166,10 +162,6 @@ abstract class AbstractRunner {
       val grouped = (allTests groupBy PathSettings.kindOf).toArray sortBy (x => PathSettings.standardKinds indexOf x._1)
 
       totalTests = allTests.size
-      expectedFailures = Properties.propOrNone("partest.errors") match {
-        case Some(num)  => num.toInt
-        case _          => 0
-      }
       val expectedFailureMessage = if (expectedFailures == 0) "" else s" (expecting $expectedFailures to fail)"
       echo(s"Selected $totalTests tests drawn from $testContributors$expectedFailureMessage\n")
 
@@ -194,8 +186,6 @@ abstract class AbstractRunner {
     }
     isSuccess
   }
-
-  import PartestDefaults.{ numThreads, waitTime }
 
   def banner = {
     val baseDir = fileManager.compilerUnderTest.parent.toString
@@ -244,10 +234,11 @@ abstract class AbstractRunner {
   def runTestsForFiles(kindFiles: Array[File], kind: String): Array[TestState] = {
     nestUI.resetTestNumber(kindFiles.size)
 
-    val pool              = Executors.newFixedThreadPool(numThreads)
+    val pool              = Executors.newFixedThreadPool(config.props.numThreads)
     val futures           = kindFiles map (f => pool submit callable(runTest(f.getAbsoluteFile)))
 
     pool.shutdown()
+    val waitTime = config.optTimeout.map(Duration.apply _).getOrElse(config.props.waitTime)
     Try (pool.awaitTermination(waitTime) {
       throw TimeoutException(waitTime)
     }) match {

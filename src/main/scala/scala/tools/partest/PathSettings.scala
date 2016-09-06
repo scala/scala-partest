@@ -4,13 +4,9 @@
 
 package scala.tools.partest
 
-import scala.tools.nsc.Properties.propOrNone
-
 /** Get current value for path settings. Default values are read from system properties `partest.srcdir` and `partest.root`. */
-private[partest] class PathSettings(val testSourcePath: String) {
+private[partest] class PathSettings(val testSourcePath: String, defaultTestRootName: Option[String]) {
   import PathSettings._
-
-  private val defaultTestRootName  = propOrNone("partest.root") // defaults can be set using the environment
 
   private def isPartestDir(d: Directory) = (d.name == "test") && (d / testSourcePath isDirectory)
   private def findJar(name: String, ds: Directory*): Either[String, SFile] =

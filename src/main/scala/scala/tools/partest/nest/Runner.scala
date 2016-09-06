@@ -14,7 +14,7 @@ import scala.io.Codec
 import scala.reflect.internal.FatalError
 import scala.reflect.internal.util.ScalaClassLoader
 import scala.sys.process.{ Process, ProcessLogger }
-import scala.tools.nsc.Properties.{ envOrNone, isWin, jdkHome, javaHome, propOrEmpty, setProp, versionMsg, javaVmName, javaVmVersion, javaVmInfo }
+import scala.tools.nsc.Properties.{ isWin, jdkHome, javaHome, versionMsg, javaVmName, javaVmVersion, javaVmInfo }
 import scala.tools.nsc.{ Settings, CompilerCommand, Global }
 import scala.tools.nsc.reporters.ConsoleReporter
 import scala.tools.nsc.util.{ Exceptional, stackTraceString }
@@ -51,7 +51,7 @@ trait TestInfo {
 }
 
 /** Run a single test. Rubber meets road. */
-class Runner(val testFile: File, val suiteRunner: AbstractRunner, val nestUI: NestUI) extends TestInfo {
+class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestUI) extends TestInfo {
 
   import suiteRunner.{fileManager => fm, _}
   val fileManager = fm
@@ -298,7 +298,7 @@ class Runner(val testFile: File, val suiteRunner: AbstractRunner, val nestUI: Ne
   }
 
   val gitRunner = List("/usr/local/bin/git", "/usr/bin/git") map (f => new java.io.File(f)) find (_.canRead)
-  val gitDiffOptions = "--ignore-space-at-eol --no-index " + propOrEmpty("partest.git_diff_options")
+  val gitDiffOptions = "--ignore-space-at-eol --no-index " + suiteRunner.config.props.gitDiffOpts
     // --color=always --word-diff
 
   def gitDiff(f1: File, f2: File): Option[String] = {

@@ -14,51 +14,15 @@ import _root_.sbt.testing._
 
 import scala.tools.partest.TestState._
 import scala.tools.partest._
-import scala.tools.partest.nest.{AbstractRunner, FileManager, RunnerSpec}
+import scala.tools.partest.nest.{SuiteRunner, FileManager, RunnerSpec}
 
-class SBTRunner(val config: RunnerSpec.Config,
-                partestFingerprint: Fingerprint, eventHandler: EventHandler, loggers: Array[Logger],
-                srcDir: String, testClassLoader: URLClassLoader, javaCmd: File, javacCmd: File,
-                override val scalacExtraArgs: Seq[String], args: Array[String]) extends AbstractRunner {
+class SBTRunner(config: RunnerSpec.Config, partestFingerprint: Fingerprint, eventHandler: EventHandler,
+                testClassLoader: URLClassLoader)
+  extends SuiteRunner(config, new FileManager(testClassLoader = testClassLoader)) {
 
   // no summary, SBT will do that for us
   override protected val printSummary = false
   override protected val partestCmd   = "partest"
-
-  val defs = {
-    val Def = "-D([^=]*)=(.*)".r
-    args.collect { case Def(k, v) => (k, v) }
-  }
-
-  // Enable colors if there's an explicit override or all loggers support them
-  override protected val colorEnabled = {
-    val ptOverride = defs.collect { case ("partest.colors", v) => v.toBoolean }.lastOption
-    ptOverride.getOrElse {
-      val sbtOverride1 = sys.props.get("sbt.log.format").map(_.toBoolean)
-      val sbtOverride2 = sys.props.get("sbt.log.noformat").map(s => !s.toBoolean)
-      sbtOverride1.orElse(sbtOverride2).getOrElse {
-        loggers.forall(_.ansiCodesSupported())
-      }
-    }
-  }
-
-  override val javaOpts = {
-    val l = defs.collect { case ("partest.java_opts", v) => v }
-    if(l.isEmpty) PartestDefaults.javaOpts
-    else l.mkString(" ")
-  }
-
-  override val scalacOpts = {
-    val l = defs.collect { case ("partest.scalac_opts", v) => v }
-    if(l.isEmpty) PartestDefaults.javaOpts
-    else l.mkString(" ")
-  }
-
-  val pathSettings = new PathSettings(config.optSourcePath orElse Option(srcDir) getOrElse PartestDefaults.sourcePath)
-  val fileManager = new FileManager(testClassLoader = testClassLoader)
-
-  override val javaCmdPath = Option(javaCmd).map(_.getAbsolutePath) getOrElse PartestDefaults.javaCmd
-  override val javacCmdPath = Option(javacCmd).map(_.getAbsolutePath) getOrElse PartestDefaults.javacCmd
 
   override def onFinishTest(testFile: File, result: TestState): TestState = {
     eventHandler.handle(new Event {
