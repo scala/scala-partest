@@ -14,12 +14,12 @@ import _root_.sbt.testing._
 
 import scala.tools.partest.TestState._
 import scala.tools.partest._
-import scala.tools.partest.nest.{AbstractRunner, FileManager, RunnerSpec, SuiteRunner}
+import scala.tools.partest.nest.{AbstractRunner, FileManager, RunnerSpec, PathSettings}
 
 class SBTRunner(val config: RunnerSpec.Config,
                 partestFingerprint: Fingerprint, eventHandler: EventHandler, loggers: Array[Logger],
                 srcDir: String, testClassLoader: URLClassLoader, javaCmd: File, javacCmd: File,
-                scalacArgs: Array[String], args: Array[String]) extends AbstractRunner {
+                override val scalacExtraArgs: Seq[String], args: Array[String]) extends AbstractRunner {
 
   // no summary, SBT will do that for us
   override protected val printSummary = false
@@ -42,41 +42,34 @@ class SBTRunner(val config: RunnerSpec.Config,
     }
   }
 
-  val javaOpts = {
+  override val javaOpts = {
     val l = defs.collect { case ("partest.java_opts", v) => v }
     if(l.isEmpty) PartestDefaults.javaOpts
     else l.mkString(" ")
   }
 
-  val scalacOpts = {
+  override val scalacOpts = {
     val l = defs.collect { case ("partest.scalac_opts", v) => v }
     if(l.isEmpty) PartestDefaults.javaOpts
     else l.mkString(" ")
   }
 
-  val suiteRunner = new SuiteRunner(
-    testSourcePath = config.optSourcePath orElse Option(srcDir) getOrElse PartestDefaults.sourcePath,
-    new FileManager(testClassLoader = testClassLoader),
-    updateCheck = config.optUpdateCheck,
-    failed  = config.optFailed,
-    nestUI = nestUI,
-    javaCmdPath = Option(javaCmd).map(_.getAbsolutePath) getOrElse PartestDefaults.javaCmd,
-    javacCmdPath = Option(javacCmd).map(_.getAbsolutePath) getOrElse PartestDefaults.javacCmd,
-    scalacExtraArgs = scalacArgs,
-    javaOpts = javaOpts,
-    scalacOpts = scalacOpts) {
+  PathSettings.testSourcePath = config.optSourcePath orElse Option(srcDir) getOrElse PartestDefaults.sourcePath
+  val fileManager = new FileManager(testClassLoader = testClassLoader)
 
-      override def onFinishTest(testFile: File, result: TestState): TestState = {
-        eventHandler.handle(new Event {
-          def fullyQualifiedName: String = testFile.testIdent
-          def fingerprint: Fingerprint = partestFingerprint
-          def selector: Selector = new TestSelector(testFile.testIdent)
-          val (status, throwable) = makeStatus(result)
-          def duration: Long = -1
-        })
-        result
-      }
-    }
+  override val javaCmdPath = Option(javaCmd).map(_.getAbsolutePath) getOrElse PartestDefaults.javaCmd
+  override val javacCmdPath = Option(javacCmd).map(_.getAbsolutePath) getOrElse PartestDefaults.javacCmd
+
+  override def onFinishTest(testFile: File, result: TestState): TestState = {
+    eventHandler.handle(new Event {
+      def fullyQualifiedName: String = testFile.testIdent
+      def fingerprint: Fingerprint = partestFingerprint
+      def selector: Selector = new TestSelector(testFile.testIdent)
+      val (status, throwable) = makeStatus(result)
+      def duration: Long = -1
+    })
+    result
+  }
 
   def makeStatus(t: TestState): (Status, OptionalThrowable) = t match {
     case Uninitialized(_) => (Status.Pending, new OptionalThrowable)

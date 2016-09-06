@@ -8,8 +8,6 @@ package nest
 import java.io.{ Console => _, _ }
 import java.net.URL
 import java.nio.charset.{ Charset, CharsetDecoder, CharsetEncoder, CharacterCodingException, CodingErrorAction => Action }
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit.NANOSECONDS
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.Duration
 import scala.io.Codec
@@ -20,7 +18,6 @@ import scala.tools.nsc.Properties.{ envOrNone, isWin, jdkHome, javaHome, propOrE
 import scala.tools.nsc.{ Settings, CompilerCommand, Global }
 import scala.tools.nsc.reporters.ConsoleReporter
 import scala.tools.nsc.util.{ Exceptional, stackTraceString }
-import scala.util.{ Try, Success, Failure }
 import ClassPath.{ join, split }
 import TestState.{ Pass, Fail, Crash, Uninitialized, Updated }
 
@@ -54,7 +51,7 @@ trait TestInfo {
 }
 
 /** Run a single test. Rubber meets road. */
-class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestUI) extends TestInfo {
+class Runner(val testFile: File, val suiteRunner: AbstractRunner, val nestUI: NestUI) extends TestInfo {
 
   import suiteRunner.{fileManager => fm, _}
   val fileManager = fm
@@ -722,122 +719,7 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
 /** Loads `library.properties` from the jar. */
 object Properties extends scala.util.PropertiesTrait {
   protected def propCategory    = "partest"
-  protected def pickJarBasedOn  = classOf[SuiteRunner]
-}
-
-/** Extended by SBT- and ConsoleRunner for running a set of tests. */
-class SuiteRunner(
-  val testSourcePath: String, // relative path, like "files", or "pending"
-  val fileManager: FileManager,
-  val updateCheck: Boolean,
-  val failed: Boolean,
-  val nestUI: NestUI,
-  val javaCmdPath: String = PartestDefaults.javaCmd,
-  val javacCmdPath: String = PartestDefaults.javacCmd,
-  val scalacExtraArgs: Seq[String] = Seq.empty,
-  val javaOpts: String = PartestDefaults.javaOpts,
-  val scalacOpts: String = PartestDefaults.scalacOpts) {
-
-  import PartestDefaults.{ numThreads, waitTime }
-
-  setUncaughtHandler
-
-  // TODO: make this immutable
-  PathSettings.testSourcePath = testSourcePath
-
-  def banner = {
-    val baseDir = fileManager.compilerUnderTest.parent.toString
-    def relativize(path: String) = path.replace(baseDir, s"$$baseDir").replace(PathSettings.srcDir.toString, "$sourceDir")
-    val vmBin  = javaHome + fileSeparator + "bin"
-    val vmName = "%s (build %s, %s)".format(javaVmName, javaVmVersion, javaVmInfo)
-
-  s"""|Partest version:     ${Properties.versionNumberString}
-      |Compiler under test: ${relativize(fileManager.compilerUnderTest.getAbsolutePath)}
-      |Scala version is:    $versionMsg
-      |Scalac options are:  ${(scalacExtraArgs ++ scalacOpts.split(' ')).mkString(" ")}
-      |Compilation Path:    ${relativize(joinPaths(fileManager.testClassPath))}
-      |Java binaries in:    $vmBin
-      |Java runtime is:     $vmName
-      |Java options are:    $javaOpts
-      |baseDir:             $baseDir
-      |sourceDir:           ${PathSettings.srcDir}
-    """.stripMargin
-    // |Available processors:       ${Runtime.getRuntime().availableProcessors()}
-    // |Java Classpath:             ${sys.props("java.class.path")}
-  }
-
-  def onFinishTest(testFile: File, result: TestState): TestState = result
-
-  def runTest(testFile: File): TestState = {
-    val runner = new Runner(testFile, this, nestUI)
-
-    // when option "--failed" is provided execute test only if log
-    // is present (which means it failed before)
-    val state =
-      if (failed && !runner.logFile.canRead)
-        runner.genPass()
-      else {
-        val (state, _) =
-          try timed(runner.run())
-          catch {
-            case t: Throwable => throw new RuntimeException(s"Error running $testFile", t)
-          }
-        nestUI.reportTest(state, runner)
-        runner.cleanup()
-        state
-      }
-    onFinishTest(testFile, state)
-  }
-
-  def runTestsForFiles(kindFiles: Array[File], kind: String): Array[TestState] = {
-    nestUI.resetTestNumber(kindFiles.size)
-
-    val pool              = Executors newFixedThreadPool numThreads
-    val futures           = kindFiles map (f => pool submit callable(runTest(f.getAbsoluteFile)))
-
-    pool.shutdown()
-    Try (pool.awaitTermination(waitTime) {
-      throw TimeoutException(waitTime)
-    }) match {
-      case Success(_) => futures map (_.get)
-      case Failure(e) =>
-        e match {
-          case TimeoutException(d)      =>
-            nestUI.warning("Thread pool timeout elapsed before all tests were complete!")
-          case ie: InterruptedException =>
-            nestUI.warning("Thread pool was interrupted")
-            ie.printStackTrace()
-        }
-        pool.shutdownNow()     // little point in continuing
-        // try to get as many completions as possible, in case someone cares
-        val results = for (f <- futures) yield {
-          try {
-            Some(f.get(0, NANOSECONDS))
-          } catch {
-            case _: Throwable => None
-          }
-        }
-        results.flatten
-    }
-  }
-
-  class TestTranscript {
-    private val buf = ListBuffer[String]()
-
-    def add(action: String): this.type = { buf += action ; this }
-    def append(text: String) { val s = buf.last ; buf.trimEnd(1) ; buf += (s + text) }
-
-    // Colorize prompts according to pass/fail
-    def fail: List[String] = {
-      import nestUI.color._
-      def pass(s: String) = bold(green("% ")) + s
-      def fail(s: String) = bold(red("% ")) + s
-      buf.toList match {
-        case Nil  => Nil
-        case xs   => (xs.init map pass) :+ fail(xs.last)
-      }
-    }
-  }
+  protected def pickJarBasedOn  = classOf[Runner]
 }
 
 case class TimeoutException(duration: Duration) extends RuntimeException

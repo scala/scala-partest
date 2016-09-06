@@ -20,7 +20,7 @@ import Path._
  * NOTE: the members are methods because `testSourcePath` changes.
  */
 object PathSettings {
-  private[nest] var testSourcePath: String = null // set by RunnerSuite
+  private[partest] var testSourcePath: String = null // set by RunnerSuite
 
   // defaults can be set using the environment, but note PathSettings is mutable
   private def defaultTestRootName  = propOrNone("partest.root")
