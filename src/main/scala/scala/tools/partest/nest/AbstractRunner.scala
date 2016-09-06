@@ -130,11 +130,6 @@ abstract class AbstractRunner {
       if (!nestUI.terse)
         nestUI.echo(banner)
 
-      val partestTests = (
-        if (config.optSelfTest) pathSettings.testsForPartest
-        else Nil
-      )
-
       val grepExpr = config.optGrep getOrElse ""
 
       // If --grep is given we suck in every file it matches.
@@ -149,7 +144,7 @@ abstract class AbstractRunner {
 
       val isRerun = config.optFailed
       val rerunTests = if (isRerun) pathSettings.failedTests else Nil
-      def miscTests = partestTests ++ individualTests ++ greppedTests ++ rerunTests
+      def miscTests = individualTests ++ greppedTests ++ rerunTests
 
       val givenKinds = PathSettings.standardKinds filter config.parsed.isSet
       val kinds = (
@@ -161,7 +156,6 @@ abstract class AbstractRunner {
 
       def testContributors = {
         List(
-          if (partestTests.isEmpty) "" else "partest self-tests",
           if (rerunTests.isEmpty) "" else "previously failed tests",
           if (kindsTests.isEmpty) "" else s"${kinds.size} named test categories",
           if (greppedTests.isEmpty) "" else s"${greppedTests.size} tests matching '$grepExpr'",
