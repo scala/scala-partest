@@ -11,7 +11,6 @@ import utils.Properties._
 import scala.tools.nsc.Properties.{ versionMsg, propOrFalse, setProp }
 import scala.collection.{ mutable, immutable }
 import scala.util.{ Try, Success, Failure }
-import TestKinds._
 import scala.reflect.internal.util.Collections.distinctBy
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.NANOSECONDS
@@ -19,6 +18,18 @@ import java.util.concurrent.TimeUnit.NANOSECONDS
 abstract class AbstractRunner {
 
   val config: RunnerSpec.Config
+  val fileManager: FileManager
+  val pathSettings: PathSettings
+
+  val updateCheck: Boolean = config.optUpdateCheck
+  val failed: Boolean = config.optFailed
+  val javaCmdPath: String = PartestDefaults.javaCmd
+  val javacCmdPath: String = PartestDefaults.javacCmd
+  val scalacExtraArgs: Seq[String] = Seq.empty
+  val javaOpts: String = PartestDefaults.javaOpts
+  val scalacOpts: String = PartestDefaults.scalacOpts
+
+  setUncaughtHandler
 
   lazy val nestUI: NestUI = new NestUI(
     verbose = config.optVerbose,
@@ -106,7 +117,7 @@ abstract class AbstractRunner {
     if (config.optVersion) echo(versionMsg)
     else if (config.optHelp) nestUI.usage()
     else {
-      val (individualTests, invalid) = config.parsed.residualArgs map (p => Path(p)) partition denotesTestPath
+      val (individualTests, invalid) = config.parsed.residualArgs map (p => Path(p)) partition pathSettings.denotesTestPath
       if (invalid.nonEmpty) {
         if (nestUI.verbose)
           invalid foreach (p => echoWarning(s"Discarding invalid test path " + p))
@@ -120,7 +131,7 @@ abstract class AbstractRunner {
         nestUI.echo(banner)
 
       val partestTests = (
-        if (config.optSelfTest) TestKinds.testsForPartest
+        if (config.optSelfTest) pathSettings.testsForPartest
         else Nil
       )
 
@@ -129,7 +140,7 @@ abstract class AbstractRunner {
       // If --grep is given we suck in every file it matches.
       // TODO: intersect results of grep with specified kinds, if any
       val greppedTests = if (grepExpr == "") Nil else {
-        val paths = grepFor(grepExpr)
+        val paths = pathSettings.grepFor(grepExpr)
         if (paths.isEmpty)
           echoWarning(s"grep string '$grepExpr' matched no tests.\n")
 
@@ -137,16 +148,16 @@ abstract class AbstractRunner {
       }
 
       val isRerun = config.optFailed
-      val rerunTests = if (isRerun) TestKinds.failedTests else Nil
+      val rerunTests = if (isRerun) pathSettings.failedTests else Nil
       def miscTests = partestTests ++ individualTests ++ greppedTests ++ rerunTests
 
-      val givenKinds = standardKinds filter config.parsed.isSet
+      val givenKinds = PathSettings.standardKinds filter config.parsed.isSet
       val kinds = (
         if (givenKinds.nonEmpty) givenKinds
-        else if (miscTests.isEmpty) standardKinds // If no kinds, --grep, or individual tests were given, assume --all
+        else if (miscTests.isEmpty) PathSettings.standardKinds // If no kinds, --grep, or individual tests were given, assume --all
         else Nil
       )
-      val kindsTests = kinds flatMap testsFor
+      val kindsTests = kinds flatMap pathSettings.testsFor
 
       def testContributors = {
         List(
@@ -159,7 +170,7 @@ abstract class AbstractRunner {
       }
 
       val allTests: Array[Path] = distinctBy(miscTests ++ kindsTests)(_.toCanonical) sortBy (_.toString) toArray
-      val grouped = (allTests groupBy kindOf).toArray sortBy (x => standardKinds indexOf x._1)
+      val grouped = (allTests groupBy PathSettings.kindOf).toArray sortBy (x => PathSettings.standardKinds indexOf x._1)
 
       totalTests = allTests.size
       expectedFailures = propOrNone("partest.errors") match {
@@ -191,39 +202,25 @@ abstract class AbstractRunner {
     isSuccess
   }
 
-  //---- from SuiteRunner:
-
-  val fileManager: FileManager
-
-  val updateCheck: Boolean = config.optUpdateCheck
-  val failed: Boolean = config.optFailed
-  val javaCmdPath: String = PartestDefaults.javaCmd
-  val javacCmdPath: String = PartestDefaults.javacCmd
-  val scalacExtraArgs: Seq[String] = Seq.empty
-  val javaOpts: String = PartestDefaults.javaOpts
-  val scalacOpts: String = PartestDefaults.scalacOpts
-
   import PartestDefaults.{ numThreads, waitTime }
-
-  setUncaughtHandler
 
   def banner = {
     val baseDir = fileManager.compilerUnderTest.parent.toString
-    def relativize(path: String) = path.replace(baseDir, s"$$baseDir").replace(PathSettings.srcDir.toString, "$sourceDir")
+    def relativize(path: String) = path.replace(baseDir, s"$$baseDir").replace(pathSettings.srcDir.toString, "$sourceDir")
     val vmBin  = javaHome + fileSeparator + "bin"
     val vmName = "%s (build %s, %s)".format(javaVmName, javaVmVersion, javaVmInfo)
 
-  s"""|Partest version:     ${Properties.versionNumberString}
-      |Compiler under test: ${relativize(fileManager.compilerUnderTest.getAbsolutePath)}
-      |Scala version is:    $versionMsg
-      |Scalac options are:  ${(scalacExtraArgs ++ scalacOpts.split(' ')).mkString(" ")}
-      |Compilation Path:    ${relativize(FileManager.joinPaths(fileManager.testClassPath))}
-      |Java binaries in:    $vmBin
-      |Java runtime is:     $vmName
-      |Java options are:    $javaOpts
-      |baseDir:             $baseDir
-      |sourceDir:           ${PathSettings.srcDir}
-    """.stripMargin
+    s"""|Partest version:     ${Properties.versionNumberString}
+        |Compiler under test: ${relativize(fileManager.compilerUnderTest.getAbsolutePath)}
+        |Scala version is:    $versionMsg
+        |Scalac options are:  ${(scalacExtraArgs ++ scalacOpts.split(' ')).mkString(" ")}
+        |Compilation Path:    ${relativize(FileManager.joinPaths(fileManager.testClassPath))}
+        |Java binaries in:    $vmBin
+        |Java runtime is:     $vmName
+        |Java options are:    $javaOpts
+        |baseDir:             $baseDir
+        |sourceDir:           ${pathSettings.srcDir}
+      """.stripMargin
     // |Available processors:       ${Runtime.getRuntime().availableProcessors()}
     // |Java Classpath:             ${sys.props("java.class.path")}
   }

@@ -14,7 +14,7 @@ import _root_.sbt.testing._
 
 import scala.tools.partest.TestState._
 import scala.tools.partest._
-import scala.tools.partest.nest.{AbstractRunner, FileManager, RunnerSpec, PathSettings}
+import scala.tools.partest.nest.{AbstractRunner, FileManager, RunnerSpec}
 
 class SBTRunner(val config: RunnerSpec.Config,
                 partestFingerprint: Fingerprint, eventHandler: EventHandler, loggers: Array[Logger],
@@ -54,7 +54,7 @@ class SBTRunner(val config: RunnerSpec.Config,
     else l.mkString(" ")
   }
 
-  PathSettings.testSourcePath = config.optSourcePath orElse Option(srcDir) getOrElse PartestDefaults.sourcePath
+  val pathSettings = new PathSettings(config.optSourcePath orElse Option(srcDir) getOrElse PartestDefaults.sourcePath)
   val fileManager = new FileManager(testClassLoader = testClassLoader)
 
   override val javaCmdPath = Option(javaCmd).map(_.getAbsolutePath) getOrElse PartestDefaults.javaCmd

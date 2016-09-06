@@ -45,7 +45,7 @@ class DirectCompiler(val runner: Runner) {
    *  While we're at it, mix in the baseline options, too.
    */
   private def updatePluginPath(args: List[String], out: AbstractFile, srcdir: AbstractFile): Seq[String] = {
-    val dir = PathSettings.testRoot
+    val dir = runner.suiteRunner.pathSettings.testRoot
     // The given path, or the output dir if ".", or a temp dir if output is virtual (since plugin loading doesn't like virtual)
     def pathOrCwd(p: String) =
       if (p == ".") {
@@ -76,9 +76,9 @@ class DirectCompiler(val runner: Runner) {
     // adding codelib.jar to the classpath
     // codelib provides the possibility to override standard reify
     // this shields the massive amount of reification tests from changes in the API
-    val codeLib = PathSettings.srcCodeLib.fold[List[Path]](x => Nil, lib => List[Path](lib))
+    val codeLib = runner.suiteRunner.pathSettings.srcCodeLib.fold[List[Path]](x => Nil, lib => List[Path](lib))
     // add the instrumented library version to classpath -- must come first
-    val specializedOverride: List[Path] = if (kind == "specialized") List(PathSettings.srcSpecLib.fold(sys.error, identity)) else Nil
+    val specializedOverride: List[Path] = if (kind == "specialized") List(runner.suiteRunner.pathSettings.srcSpecLib.fold(sys.error, identity)) else Nil
 
     val classPath: List[Path] = specializedOverride ++ codeLib ++ fileManager.testClassPath ++ List[Path](outDir)
 

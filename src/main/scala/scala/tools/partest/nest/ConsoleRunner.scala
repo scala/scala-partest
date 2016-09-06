@@ -7,7 +7,7 @@ package scala.tools.partest
 package nest
 
 class ConsoleRunner(val config: RunnerSpec.Config) extends AbstractRunner {
-  PathSettings.testSourcePath = config.optSourcePath getOrElse PartestDefaults.sourcePath
+  val pathSettings = new PathSettings(config.optSourcePath getOrElse PartestDefaults.sourcePath)
   val fileManager = new FileManager(ClassPath split PathResolver.Environment.javaUserClassPath map (Path(_))) // the script sets up our classpath for us via sbt
 }
 
