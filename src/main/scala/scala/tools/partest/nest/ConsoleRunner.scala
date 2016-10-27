@@ -6,18 +6,13 @@
 package scala.tools.partest
 package nest
 
-class ConsoleRunner(val config: RunnerSpec.Config) extends AbstractRunner {
-  val suiteRunner = new SuiteRunner (
-    testSourcePath = config.optSourcePath getOrElse PartestDefaults.sourcePath,
-    fileManager = new FileManager(ClassPath split PathResolver.Environment.javaUserClassPath map (Path(_))), // the script sets up our classpath for us via ant
-    updateCheck = config.optUpdateCheck,
-    failed = config.optFailed,
-    nestUI = nestUI)
-}
-
 object ConsoleRunner {
   def main(args: Array[String]): Unit = {
-    val r = new ConsoleRunner(RunnerSpec.forArgs(args))
+    val r = new SuiteRunner(
+      RunnerSpec(new PartestProperties(args)),
+      // the script sets up our classpath for us via sbt
+      new FileManager(ClassPath split PathResolver.Environment.javaUserClassPath map (Path(_)))
+    )
     // So we can ctrl-C a test run and still hear all
     // the buffered failure info.
     scala.sys addShutdownHook r.issueSummaryReport()

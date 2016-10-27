@@ -23,9 +23,9 @@ class Colors(enabled: Boolean) {
     s => if (enabled) code + s + RESET else s
 }
 
-class NestUI(val verbose: Boolean = false, val debug: Boolean = false, val terse: Boolean = false,
-             val diffOnFail: Boolean = false, val logOnFail: Boolean = false,
-             val colorEnabled: Boolean = sys.props contains "partest.colors") {
+class NestUI(val verbose: Boolean, val debug: Boolean, val terse: Boolean,
+             val diffOnFail: Boolean, val logOnFail: Boolean,
+             val colorEnabled: Boolean) {
   private[this] val testNum = new java.util.concurrent.atomic.AtomicInteger(1)
   @volatile private[this] var testNumberFmt = "%3d"
   private[this] def testNumber = testNumberFmt format testNum.getAndIncrement()
@@ -140,11 +140,6 @@ class NestUI(val verbose: Boolean = false, val debug: Boolean = false, val terse
 
   def debug(msg: String): Unit =
     if (debug) System.err.println(msg)
-
-  def showAllJVMInfo(): Unit = {
-    vlog(vmArgString)
-    vlog(allPropertiesString)
-  }
 
   def vlog(msg: => String) = if (verbose) System.err.println(msg)
 }
