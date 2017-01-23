@@ -75,7 +75,7 @@ definedTests in Test += (
     and files (including java sources) in that directory are compiled in order by looking
     at `_$N` suffixes before the file's extension and compiling them grouped by $N, in ascending order.
   - jars in `test/files/lib` are expected to be on the classpath and may be used by tests
-  - certain kinds of tests (scalacheck/instrumented/specialized) add additional jars to the classpath
+  - certain kinds of tests (instrumented/specialized) add additional jars to the classpath
 
 ## System properties available to tests:
 
