@@ -22,8 +22,6 @@ scalaXmlVersion            := {
   if (scalaVersion.value.startsWith("2.11.")) "1.0.4" else "1.0.6"
 }
 
-scalaCheckVersion          := "1.11.6"
-
 // TODO: eliminate "-deprecation:false" for nightlies,
 //   included by default because we don't want to break scala/scala pr validation
 scalacOptions ++=
@@ -42,9 +40,6 @@ libraryDependencies += "org.apache.ant"                 % "ant"            % "1.
 libraryDependencies += "com.googlecode.java-diff-utils" % "diffutils"      % "1.3.0"
 
 libraryDependencies += "org.scala-sbt"                  % "test-interface" % "1.0"
-
-// to run scalacheck tests, depend on scalacheck separately
-libraryDependencies += "org.scalacheck"                %% "scalacheck"     % scalaCheckVersion.value % "provided"
 
 // mark all scala dependencies as provided which means one has to explicitly provide them when depending on partest
 // this allows for easy testing of modules (like scala-xml) that provide tested classes themselves and shouldn't
