@@ -15,8 +15,9 @@ env:
 script: admin/build.sh
 
 jdk:
-  - openjdk6
   - oraclejdk8
 
 notifications:
-  email: adriaan.moors@typesafe.com
+  email:
+    - adriaan.moors@lightbend.com
+    - seth.tisue@lightbend.com
