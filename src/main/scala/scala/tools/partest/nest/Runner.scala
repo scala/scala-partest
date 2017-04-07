@@ -5,23 +5,23 @@
 package scala.tools.partest
 package nest
 
-import java.io.{ Console => _, _ }
+import java.io.{Console => _, _}
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.NANOSECONDS
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.Duration
 import scala.reflect.internal.FatalError
 import scala.reflect.internal.util.ScalaClassLoader
-import scala.sys.process.{ Process, ProcessLogger }
-import scala.tools.nsc.Properties.{ envOrNone, isWin, javaHome, propOrEmpty, versionMsg, javaVmName, javaVmVersion, javaVmInfo }
-import scala.tools.nsc.{ Settings, CompilerCommand, Global }
+import scala.sys.process.{Process, ProcessLogger}
+import scala.tools.nsc.Properties.{envOrNone, isWin, javaHome, propOrEmpty, versionMsg, javaVmName, javaVmVersion, javaVmInfo}
+import scala.tools.nsc.{Settings, CompilerCommand, Global}
 import scala.tools.nsc.reporters.ConsoleReporter
 import scala.tools.nsc.util.stackTraceString
-import scala.util.{ Try, Success, Failure }
+import scala.util.{Try, Success, Failure}
 import ClassPath.join
-import TestState.{ Pass, Fail, Crash, Uninitialized, Updated }
+import TestState.{Pass, Fail, Crash, Uninitialized, Updated}
 
-import FileManager.{ compareContents, joinPaths, withTempFile }
+import FileManager.{compareContents, joinPaths, withTempFile}
 
 trait TestInfo {
   /** pos/t1234 */
@@ -785,8 +785,8 @@ class SuiteRunner(
   def runTestsForFiles(kindFiles: Array[File], kind: String): Array[TestState] = {
     nestUI.resetTestNumber(kindFiles.size)
 
-    val pool              = Executors newFixedThreadPool numThreads
-    val futures           = kindFiles map (f => pool submit callable(runTest(f.getAbsoluteFile)))
+    val pool    = Executors.newFixedThreadPool(numThreads)
+    val futures = kindFiles.map(f => pool.submit(callable(runTest(f.getAbsoluteFile))))
 
     pool.shutdown()
     Try (pool.awaitTermination(waitTime) {

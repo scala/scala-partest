@@ -41,6 +41,6 @@ object PathSettings {
   // Directory <root>/test/files or .../scaladoc
   def srcDir = Directory(testRoot / testSourcePath toCanonical)
 
-  def srcSpecLib     = findJar("instrumented", Directory(srcDir / "speclib"))
-  def srcCodeLib     = findJar("code",  Directory(srcDir / "codelib"), Directory(testRoot / "files" / "codelib") /* work with --srcpath pending */)
+  def srcSpecLib = findJar("instrumented", Directory(srcDir / "speclib"))
+  def srcCodeLib = findJar("code",  Directory(srcDir / "codelib"), Directory(testRoot / "files" / "codelib") /* work with --srcpath pending */)
 }
