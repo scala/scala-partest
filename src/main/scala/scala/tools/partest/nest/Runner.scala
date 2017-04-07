@@ -93,7 +93,7 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
       System.err.println(stackTraceString(t))
   }
   protected def crashHandler: PartialFunction[Throwable, TestState] = {
-    case t: InterruptedException =>
+    case _: InterruptedException =>
       genTimeout()
     case t: Throwable =>
       showCrashInfo(t)
@@ -209,7 +209,7 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
       val p = Process(args) run pl
       try p.exitValue
       catch {
-        case e: InterruptedException =>
+        case _: InterruptedException =>
           nestUI.verbose(s"Interrupted waiting for command to finish (${args mkString " "})")
           p.destroy
           nonzero
@@ -312,7 +312,7 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
 
       "\n" + diff
     }
-    catch { case t: Exception => None }
+    catch { case _: Exception => None }
   }
 
   /** Normalize the log output by applying test-specific filters
@@ -759,7 +759,7 @@ class SuiteRunner(
     // |Java Classpath:             ${sys.props("java.class.path")}
   }
 
-  def onFinishTest(testFile: File, result: TestState): TestState = result
+  def onFinishTest(@deprecated("unused","") testFile: File, result: TestState): TestState = result
 
   def runTest(testFile: File): TestState = {
     val runner = new Runner(testFile, this, nestUI)
@@ -782,7 +782,7 @@ class SuiteRunner(
     onFinishTest(testFile, state)
   }
 
-  def runTestsForFiles(kindFiles: Array[File], kind: String): Array[TestState] = {
+  def runTestsForFiles(kindFiles: Array[File]): Array[TestState] = {
     nestUI.resetTestNumber(kindFiles.size)
 
     val pool    = Executors.newFixedThreadPool(numThreads)
@@ -795,7 +795,7 @@ class SuiteRunner(
       case Success(_) => futures map (_.get)
       case Failure(e) =>
         e match {
-          case TimeoutException(d)      =>
+          case TimeoutException(_)      =>
             nestUI.warning("Thread pool timeout elapsed before all tests were complete!")
           case ie: InterruptedException =>
             nestUI.warning("Thread pool was interrupted")

@@ -33,7 +33,7 @@ abstract class AntRunner(srcDir: String, testClassLoader: URLClassLoader, javaCm
     else {
       log(s"Running ${files.length} tests in '$kind' at $now")
       // log(s"Tests: ${files.toList}")
-      val results = runTestsForFiles(files, kind)
+      val results = runTestsForFiles(files)
       val (passed, failed) = results partition (_.isOk)
       val numPassed = passed.size
       val numFailed = failed.size

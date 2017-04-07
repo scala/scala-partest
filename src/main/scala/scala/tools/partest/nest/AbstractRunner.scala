@@ -173,7 +173,7 @@ abstract class AbstractRunner {
           val num = paths.size
           val ss = if (num == 1) "" else "s"
           comment(s"starting $num test$ss in $kind")
-          val results = suiteRunner.runTestsForFiles(paths map (_.jfile.getAbsoluteFile), kind)
+          val results = suiteRunner.runTestsForFiles(paths map (_.jfile.getAbsoluteFile))
           val (passed, failed) = results partition (_.isOk)
 
           passedTests ++= passed
