@@ -104,7 +104,7 @@ package object partest {
 
   implicit class ExecutorOps(val executor: ExecutorService) {
     def awaitTermination[A](wait: Duration)(failing: => A = ()): Option[A] = (
-      if (executor awaitTermination (wait.length, wait.unit)) None
+      if (executor.awaitTermination(wait.length, wait.unit)) None
       else Some(failing)
     )
   }
