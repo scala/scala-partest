@@ -1,58 +1,43 @@
+import ScalaModulePlugin._
 import VersionKeys._
 
 scalaModuleSettings
 
-name                       := "scala-partest"
+name    := "scala-partest"
+version := "1.0.19-SNAPSHOT"
 
-version                    := "1.0.19-SNAPSHOT"
+scalaVersionsByJvm in ThisBuild := {
+  val v211 = "2.11.11"
 
-scalaVersion               := crossScalaVersions.value.head
-
-crossScalaVersions         := {
-  val java = System.getProperty("java.version")
-  if (java.startsWith("1.6."))
-    Seq("2.11.8")
-  else if (java.startsWith("1.8."))
-    Seq("2.12.1")
-  else
-    sys.error(s"don't know what Scala versions to build on $java")
+  Map(
+    6 -> List(v211 -> true),
+    7 -> List(v211 -> false),
+    8 -> List(v211 -> false),
+    9 -> List(v211 -> false))
 }
 
-scalaXmlVersion            := {
+scalaXmlVersion := {
   if (scalaVersion.value.startsWith("2.11.")) "1.0.4" else "1.0.6"
 }
 
-scalaCheckVersion          := "1.11.6"
+scalaCheckVersion := "1.11.6"
 
-// TODO: eliminate "-deprecation:false" for nightlies,
-//   included by default because we don't want to break scala/scala pr validation
-scalacOptions ++=
-  Seq("-feature", "-deprecation:false", "-unchecked", "-Xlint", "-Xfatal-warnings") ++
-  (CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, scalaMajor)) if scalaMajor < 12 =>
-      Seq("-optimize")
-    case _ =>
-      Seq()  // maybe "-Yopt:l:classpath" eventually?
-  })
+scalacOptions += "-Xfatal-warnings"
+enableOptimizer
 
 // dependencies
 // versions involved in integration builds / that change frequently should be keys, set above!
 libraryDependencies += "org.apache.ant"                 % "ant"            % "1.8.4" % "provided"
-
 libraryDependencies += "com.googlecode.java-diff-utils" % "diffutils"      % "1.3.0"
-
 libraryDependencies += "org.scala-sbt"                  % "test-interface" % "1.0"
-
 // to run scalacheck tests, depend on scalacheck separately
 libraryDependencies += "org.scalacheck"                %% "scalacheck"     % scalaCheckVersion.value % "provided"
-
 // mark all scala dependencies as provided which means one has to explicitly provide them when depending on partest
 // this allows for easy testing of modules (like scala-xml) that provide tested classes themselves and shouldn't
 // pull in an older version of itself
 libraryDependencies += "org.scala-lang.modules"        %% "scala-xml"      % scalaXmlVersion.value % "provided" intransitive()
-
 libraryDependencies += "org.scala-lang"                 % "scalap"         % scalaVersion.value % "provided" intransitive()
-
 libraryDependencies += "org.scala-lang"                 % "scala-reflect"  % scalaVersion.value % "provided" intransitive()
-
 libraryDependencies += "org.scala-lang"                 % "scala-compiler" % scalaVersion.value % "provided" intransitive()
+
+OsgiKeys.exportPackage := Seq(s"scala.tools.partest.*;version=${version.value}")
