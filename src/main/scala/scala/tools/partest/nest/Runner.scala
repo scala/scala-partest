@@ -761,7 +761,7 @@ class SuiteRunner(
     // |Java Classpath:             ${sys.props("java.class.path")}
   }
 
-  def onFinishTest(@deprecated("unused","") testFile: File, result: TestState): TestState = result
+  def onFinishTest(testFile: File, result: TestState): TestState = { unused(testFile) ; result }
 
   def runTest(testFile: File): TestState = {
     val runner = new Runner(testFile, this, nestUI)

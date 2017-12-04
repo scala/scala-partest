@@ -17,6 +17,7 @@ scalaVersionsByJvm in ThisBuild := {
 scalaXmlVersion := "1.0.6"
 
 scalacOptions += "-Xfatal-warnings"
+scalacOptions ++= "-Xelide-below" :: "0" :: "-Ywarn-unused" :: Nil
 enableOptimizer
 
 // dependencies
