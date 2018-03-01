@@ -63,7 +63,7 @@ abstract class AbstractRunner {
     oempty(p, f, s) mkString ", "
   }
 
-  private[this] def isSuccess = failedTests.size == expectedFailures
+  private[this] def isSuccess = failedTests.size == expectedFailures && failedTests.size + passedTests.size > 0
 
   def issueSummaryReport() {
     // Don't run twice
@@ -87,12 +87,12 @@ abstract class AbstractRunner {
             echo(state.transcriptString + "\n")
           }
         }
-
-        def files_s = failed0.map(_.testFile).mkString(""" \""" + "\n  ")
-        echo("# Failed test paths (this command will update checkfiles)")
-        echo(partestCmd + " --update-check \\\n  " + files_s + "\n")
+        if (nestUI.verbose || failed0.size <= 50) {
+          def files_s = failed0.map(_.testFile).mkString(""" \""" + "\n  ")
+          echo("# Failed test paths (this command will update checkfiles)")
+          echo(partestCmd + " --update-check \\\n  " + files_s + "\n")
+        }
       }
-
       if (printSummary) {
         echo(message)
         levyJudgment()
@@ -118,10 +118,7 @@ abstract class AbstractRunner {
       if (!nestUI.terse)
         nestUI.echo(suiteRunner.banner)
 
-      val partestTests = (
-        if (config.optSelfTest) TestKinds.testsForPartest
-        else Nil
-      )
+      val partestTests = if (config.optSelfTest) TestKinds.testsForPartest else Nil
 
       val grepExpr = config.optGrep getOrElse ""
 
@@ -140,9 +137,11 @@ abstract class AbstractRunner {
       def miscTests = partestTests ++ individualTests ++ greppedTests ++ rerunTests
 
       val givenKinds = standardKinds filter config.parsed.isSet
+      // named kinds to run, or else --all kinds, unless individual tests were specified
+      // (by path, --grep, --failed, even if there were invalid files specified)
       val kinds = (
         if (givenKinds.nonEmpty) givenKinds
-        else if (miscTests.isEmpty && invalid.isEmpty) standardKinds // If no kinds, --grep, or individual tests were given, assume --all, unless there were invalid files specified
+        else if (miscTests.isEmpty && invalid.isEmpty) standardKinds
         else Nil
       )
       val kindsTests = kinds flatMap testsFor
@@ -168,18 +167,24 @@ abstract class AbstractRunner {
       val expectedFailureMessage = if (expectedFailures == 0) "" else s" (expecting $expectedFailures to fail)"
       echo(s"Selected $totalTests tests drawn from $testContributors$expectedFailureMessage\n")
 
+      var limping = false
       val (_, millis) = timed {
         for ((kind, paths) <- grouped) {
           val num = paths.size
           val ss = if (num == 1) "" else "s"
           comment(s"starting $num test$ss in $kind")
-          val results = suiteRunner.runTestsForFiles(paths map (_.jfile.getAbsoluteFile), kind)
-          val (passed, failed) = results partition (_.isOk)
+          if (limping) comment(s"suite already in failure, skipping") else {
+            val results = suiteRunner.runTestsForFiles(paths.map(_.jfile.getAbsoluteFile)) match {
+              case Left((_, states)) => limping = true ; states
+              case Right(states) => states
+            }
+            val (passed, failed) = results partition (_.isOk)
 
-          passedTests ++= passed
-          failedTests ++= failed
-          if (failed.nonEmpty) {
-            comment(passFailString(passed.size, failed.size, 0) + " in " + kind)
+            passedTests ++= passed
+            failedTests ++= failed
+            if (failed.nonEmpty) {
+              comment(passFailString(passed.size, failed.size, 0) + " in " + kind)
+            }
           }
           echo("")
         }

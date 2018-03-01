@@ -4,7 +4,8 @@
 
 package scala.tools
 
-import java.util.concurrent.{ Callable, ExecutorService }
+import java.util.concurrent.{Callable, ExecutorService}
+import scala.annotation.elidable, elidable.ALL
 import scala.concurrent.duration.Duration
 import scala.tools.nsc.util.Exceptional
 
@@ -103,7 +104,7 @@ package object partest {
 
   implicit class ExecutorOps(val executor: ExecutorService) {
     def awaitTermination[A](wait: Duration)(failing: => A = ()): Option[A] = (
-      if (executor awaitTermination (wait.length, wait.unit)) None
+      if (executor.awaitTermination(wait.length, wait.unit)) None
       else Some(failing)
     )
   }
@@ -184,4 +185,7 @@ package object partest {
     import scala.collection.JavaConverters._
     System.getProperties.asScala.toList.sorted map { case (k, v) => "%s -> %s\n".format(k, v) } mkString ""
   }
+
+  // consume a value elidably to avoid unused warning
+  @elidable(ALL) def unused[A](a: A): A = a
 }

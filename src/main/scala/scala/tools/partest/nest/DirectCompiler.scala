@@ -7,10 +7,10 @@ package scala.tools.partest
 package nest
 
 import scala.collection.mutable.ListBuffer
-import scala.tools.nsc.{ Global, Settings, CompilerCommand }
-import scala.tools.nsc.reporters.{ Reporter, ConsoleReporter }
+import scala.tools.nsc.{Global, Settings, CompilerCommand}
+import scala.tools.nsc.reporters.{Reporter, ConsoleReporter}
 import scala.reflect.io.AbstractFile
-import java.io.{ PrintWriter, FileWriter }
+import java.io.{PrintWriter, FileWriter}
 
 class ExtConsoleReporter(settings: Settings, val writer: PrintWriter) extends ConsoleReporter(settings, Console.in, writer) {
   shortname = true

@@ -5,23 +5,23 @@
 package scala.tools.partest
 package nest
 
-import java.io.{ Console => _, _ }
-import java.util.concurrent.Executors
+import java.io.{Console => _, _}
+import java.util.concurrent.{Executors, ExecutionException}
 import java.util.concurrent.TimeUnit.NANOSECONDS
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.Duration
 import scala.reflect.internal.FatalError
 import scala.reflect.internal.util.ScalaClassLoader
-import scala.sys.process.{ Process, ProcessLogger }
-import scala.tools.nsc.Properties.{ envOrNone, isWin, javaHome, propOrEmpty, versionMsg, javaVmName, javaVmVersion, javaVmInfo }
-import scala.tools.nsc.{ Settings, CompilerCommand, Global }
+import scala.sys.process.{Process, ProcessLogger}
+import scala.tools.nsc.Properties.{envOrNone, isWin, javaHome, propOrEmpty, versionMsg, javaVmName, javaVmVersion, javaVmInfo}
+import scala.tools.nsc.{Settings, CompilerCommand, Global}
 import scala.tools.nsc.reporters.ConsoleReporter
 import scala.tools.nsc.util.stackTraceString
-import scala.util.{ Try, Success, Failure }
+import scala.util.{Try, Success, Failure}
 import ClassPath.join
-import TestState.{ Pass, Fail, Crash, Uninitialized, Updated }
+import TestState.{Pass, Fail, Crash, Uninitialized, Updated}
 
-import FileManager.{ compareContents, joinPaths, withTempFile }
+import FileManager.{compareContents, joinPaths, withTempFile}
 
 trait TestInfo {
   /** pos/t1234 */
@@ -63,11 +63,11 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
   // except for a . per passing test to show progress.
   def isEnumeratedTest = false
 
-  private var _lastState: TestState = null
-  private val _transcript = new TestTranscript
+  private[this] var _lastState: TestState = null
+  private[this] val _transcript = new TestTranscript
 
   def lastState                   = if (_lastState == null) Uninitialized(testFile) else _lastState
-  def setLastState(s: TestState)  = _lastState = s
+  def lastState_=(s: TestState)   = _lastState = s
   def transcript: List[String]    = _transcript.fail ++ logFile.fileLines
   def pushTranscript(msg: String) = _transcript add msg
 
@@ -93,7 +93,7 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
       System.err.println(stackTraceString(t))
   }
   protected def crashHandler: PartialFunction[Throwable, TestState] = {
-    case t: InterruptedException =>
+    case _: InterruptedException =>
       genTimeout()
     case t: Throwable =>
       showCrashInfo(t)
@@ -141,7 +141,7 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
    */
   def nextTestAction[T](body: => T)(failFn: PartialFunction[T, TestState]): T = {
     val result = body
-    setLastState( if (failFn isDefinedAt result) failFn(result) else genPass() )
+    lastState = failFn.applyOrElse(result, (_: T) => genPass())
     result
   }
   def nextTestActionExpectTrue(reason: String, body: => Boolean): Boolean = (
@@ -204,15 +204,14 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
   protected def runCommand(args: Seq[String], outFile: File): Boolean = {
     //(Process(args) #> outFile !) == 0 or (Process(args) ! pl) == 0
     val pl = ProcessLogger(outFile)
-    val nonzero = 17     // rounding down from 17.3
     def run: Int = {
       val p = Process(args) run pl
       try p.exitValue
       catch {
-        case e: InterruptedException =>
+        case ie: InterruptedException =>
           nestUI.verbose(s"Interrupted waiting for command to finish (${args mkString " "})")
           p.destroy
-          nonzero
+          throw ie
         case t: Throwable =>
           nestUI.verbose(s"Exception waiting for command to finish: $t (${args mkString " "})")
           p.destroy
@@ -312,7 +311,7 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
 
       "\n" + diff
     }
-    catch { case t: Exception => None }
+    catch { case _: Exception => None }
   }
 
   /** Normalize the log output by applying test-specific filters
@@ -399,9 +398,6 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
           else diff
         _transcript append bestDiff
         genFail("output differs")
-        // TestState.fail("output differs", "output differs",
-        // genFail("output differs")
-        // TestState.Fail("output differs", bestDiff)
       case None        => genPass()  // redundant default case
     } getOrElse true
   }
@@ -635,7 +631,7 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
     // and just looking at the diff, so I made them all do that
     // because this is long enough.
     if (!Output.withRedirected(logWriter)(try loop() finally resReader.close()))
-      setLastState(genPass())
+      lastState = genPass()
 
     (diffIsOk, LogContext(logFile, swr, wr))
   }
@@ -644,16 +640,22 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
     // javac runner, for one, would merely append to an existing log file, so just delete it before we start
     logFile.delete()
 
-    if (kind == "neg" || (kind endsWith "-neg")) runNegTest()
-    else kind match {
-      case "pos"          => runTestCommon(true)
-      case "ant"          => runAntTest()
-      case "res"          => runResidentTest()
-      case "scalap"       => runScalapTest()
-      case "script"       => runScriptTest()
-      case _              => runTestCommon(execTest(outDir, logFile) && diffIsOk)
-    }
+    def runWhatever() =
+      if (kind == "neg" || (kind endsWith "-neg")) runNegTest()
+      else kind match {
+        case "pos"          => runTestCommon(true)
+        case "ant"          => runAntTest()
+        case "res"          => runResidentTest()
+        case "scalap"       => runScalapTest()
+        case "script"       => runScriptTest()
+        case _              => runTestCommon(execTest(outDir, logFile) && diffIsOk)
+      }
 
+    try runWhatever()
+    catch {
+      case _: InterruptedException => lastState = genTimeout()
+      case t: Throwable            => lastState = genCrash(t)
+    }
     lastState
   }
 
@@ -730,7 +732,7 @@ class SuiteRunner(
   val javaOpts: String = PartestDefaults.javaOpts,
   val scalacOpts: String = PartestDefaults.scalacOpts) {
 
-  import PartestDefaults.{ numThreads, waitTime }
+  import PartestDefaults.{numThreads, waitTime}
 
   setUncaughtHandler
 
@@ -758,7 +760,7 @@ class SuiteRunner(
     // |Java Classpath:             ${sys.props("java.class.path")}
   }
 
-  def onFinishTest(testFile: File, result: TestState): TestState = result
+  def onFinishTest(testFile: File, result: TestState): TestState = { unused(testFile) ; result }
 
   def runTest(testFile: File): TestState = {
     val runner = new Runner(testFile, this, nestUI)
@@ -769,11 +771,8 @@ class SuiteRunner(
       if (failed && !runner.logFile.canRead)
         runner.genPass()
       else {
-        val (state, _) =
-          try timed(runner.run())
-          catch {
-            case t: Throwable => throw new RuntimeException(s"Error running $testFile", t)
-          }
+        val (state, time) = timed(runner.run())
+        nestUI.verbose(s"$testFile completed in $time")
         nestUI.reportTest(state, runner)
         runner.cleanup()
         state
@@ -781,35 +780,38 @@ class SuiteRunner(
     onFinishTest(testFile, state)
   }
 
-  def runTestsForFiles(kindFiles: Array[File], kind: String): Array[TestState] = {
+  def runTestsForFiles(kindFiles: Array[File]): Either[(Exception, Array[TestState]), Array[TestState]] = {
     nestUI.resetTestNumber(kindFiles.size)
 
-    val pool              = Executors newFixedThreadPool numThreads
-    val futures           = kindFiles map (f => pool submit callable(runTest(f.getAbsoluteFile)))
+    val pool    = Executors.newFixedThreadPool(numThreads)
+    val futures = kindFiles.map(f => pool.submit(callable(runTest(f.getAbsoluteFile))))
 
     pool.shutdown()
-    Try (pool.awaitTermination(waitTime) {
-      throw TimeoutException(waitTime)
-    }) match {
-      case Success(_) => futures map (_.get)
-      case Failure(e) =>
+    Try (pool.awaitTermination(waitTime)(throw TimeoutException(waitTime))) match {
+      case Success(_) => Right(futures.map(_.get))
+      case Failure(e: Exception) =>
         e match {
-          case TimeoutException(d)      =>
-            nestUI.warning("Thread pool timeout elapsed before all tests were complete!")
+          case TimeoutException(_)      =>
+            nestUI.echoWarning("Thread pool timeout elapsed before all tests were complete!")
           case ie: InterruptedException =>
-            nestUI.warning("Thread pool was interrupted")
+            nestUI.echoWarning("Thread pool was interrupted")
             ie.printStackTrace()
         }
-        pool.shutdownNow()     // little point in continuing
-        // try to get as many completions as possible, in case someone cares
-        val results = for (f <- futures) yield {
+        pool.shutdownNow()
+        val states = (kindFiles, futures).zipped.map {(testFile, future) =>
           try {
-            Some(f.get(0, NANOSECONDS))
+            if (future.isDone) future.get(0, NANOSECONDS) else {
+              val s = Uninitialized(testFile)
+              onFinishTest(testFile, s)              // reported as pending
+              s
+            }
           } catch {
-            case _: Throwable => None
+            case e: ExecutionException => new Runner(testFile, this, nestUI).genCrash(e.getCause)
+            case _: Throwable          => new Runner(testFile, this, nestUI).genTimeout()
           }
         }
-        results.flatten
+        Left((e, states))
+      case Failure(t) => throw t
     }
   }
 
