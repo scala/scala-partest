@@ -19,11 +19,7 @@ Test categories (subdirectories under `test/files`)
 As partest links directly against the compiler being tested, it's cross-versioned against
 the compiler version that it's intended for.
 
-There are three ways of invoking partest:
-
-  - ant (see https://github.com/scala/scala/blob/2.11.x/test/build-partest.xml and https://github.com/scala/scala-partest/blob/master/src/main/scala/scala/tools/partest/PartestTask.scala)
-  - sbt (details below)
-  - the [test/partest script](https://github.com/scala/scala/blob/2.11.x/test/partest), which uses ant to set up the classpath in the same way as the ant task, but then launches [ConsoleRunner](https://github.com/scala/scala-partest/blob/master/src/main/scala/scala/tools/partest/nest/ConsoleRunner.scala) directly.
+Partest is invoked from sbt.
 
 The compiler to be tested must be on the classpath.
 The corresponding jar or class directory is detected by [FileManager::findArtifact](https://github.com/scala/scala-partest/blob/master/src/main/scala/scala/tools/partest/nest/FileManager.scala#L123).
