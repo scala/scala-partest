@@ -1,7 +1,13 @@
-scala-partest [<img src="https://img.shields.io/travis/scala/scala-partest.svg"/>](https://travis-ci.org/scala/scala-partest) [<img src="https://img.shields.io/maven-central/v/org.scala-lang.modules/scala-partest_2.11.svg?label=latest%20release%20for%202.11"/>](http://search.maven.org/#search%7Cga%7C1%7Cg%3Aorg.scala-lang.modules%20a%3Ascala-partest_2.11) [<img src="https://img.shields.io/maven-central/v/org.scala-lang.modules/scala-partest_2.12*.svg?label=latest%20release%20for%202.12"/>](http://search.maven.org/#search%7Cga%7C1%7Cg%3Aorg.scala-lang.modules%20a%3Ascala-partest_2.12*)
-=============
 
 Partest is the testing framework used to regression-test the Scala compiler and standard library.
+
+# Branches
+
+* Scala 2.11: 1.0.x
+* Scala 2.12: 1.1.x
+* Scala 2.13: 1.2.x
+
+# Where tests live
 
 The compiler under test is instantiated by partest to compile the test files (or directories)
 under the test sources directory (`test/files` by default). The test's output is compared against the
@@ -19,6 +25,8 @@ Test categories (subdirectories under `test/files`)
 As partest links directly against the compiler being tested, it's cross-versioned against
 the compiler version that it's intended for.
 
+## Running partest
+
 Partest is invoked from sbt.
 
 The compiler to be tested must be on the classpath.
@@ -33,37 +41,6 @@ Here are some non-obvious useful options:
   - `--update-check`: overwrite check files with log files (where the latter exists)
   - `-Dpartest.scalac_opts=...` -> add compiler options
   - `-Dpartest.debug=true` -> print debug messages
-
-## SBT usage
-
-### Historical Note
-
-These instructions are valid as of Partest 1.0.13. Prior to that release, SBT users required `scala-partest-interface` in addition to `scala-partest`. The test framework class used to be `scala.tools.partest.Framework`, whereas now it is  `scala.tools.partest.sbt.Framework`)
-
-### Instructions
-
-To sbt test your project with partest through this testing interface, add something like this to your build.sbt:
-
-```
-libraryDependencies += "org.scala-lang.modules" %% "scala-partest" % "1.0.13" % "test" // or newer
-
-fork in Test := true
-
-javaOptions in Test += "-Xmx1G"
-
-testFrameworks += new TestFramework("scala.tools.partest.sbt.Framework")
-
-definedTests in Test += (
-  new sbt.TestDefinition(
-    "partest",
-    // marker fingerprint since there are no test classes
-    // to be discovered by sbt:
-    new sbt.testing.AnnotatedFingerprint {
-      def isModule = true
-      def annotationName = "partest"
-    }, true, Array())
-  )
-```
 
 ## Advanced usage:
 
