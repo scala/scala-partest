@@ -1,5 +1,4 @@
 import ScalaModulePlugin._
-import VersionKeys._
 
 scalaModuleSettings
 
