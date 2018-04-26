@@ -4,10 +4,10 @@ import VersionKeys._
 scalaModuleSettings
 
 name    := "scala-partest"
-version := "1.1.4-SNAPSHOT"
+version := "1.2.0-SNAPSHOT"
 
 scalaVersionsByJvm in ThisBuild := {
-  val vs = List("2.12.4", "2.13.0-M3")
+  val vs = List("2.13.0-M4-pre-20d3c21")  // new collections
 
   Map(
     8 -> vs.map(_ -> true),
