@@ -118,10 +118,6 @@ abstract class AbstractRunner {
       if (!nestUI.terse)
         nestUI.echo(suiteRunner.banner)
 
-      val partestTests = (
-        if (config.optSelfTest) TestKinds.testsForPartest
-        else Nil
-      )
 
       val grepExpr = config.optGrep getOrElse ""
 
@@ -137,7 +133,7 @@ abstract class AbstractRunner {
 
       val isRerun = config.optFailed
       val rerunTests = if (isRerun) TestKinds.failedTests else Nil
-      def miscTests = partestTests ++ individualTests ++ greppedTests ++ rerunTests
+      def miscTests = individualTests ++ greppedTests ++ rerunTests
 
       val givenKinds = standardKinds filter config.parsed.isSet
       val kinds = (
@@ -149,7 +145,6 @@ abstract class AbstractRunner {
 
       def testContributors = {
         List(
-          if (partestTests.isEmpty) "" else "partest self-tests",
           if (rerunTests.isEmpty) "" else "previously failed tests",
           if (kindsTests.isEmpty) "" else s"${kinds.size} named test categories",
           if (greppedTests.isEmpty) "" else s"${greppedTests.size} tests matching '$grepExpr'",
