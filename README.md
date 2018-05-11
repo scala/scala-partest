@@ -1,7 +1,13 @@
-scala-partest [<img src="https://img.shields.io/travis/scala/scala-partest.svg"/>](https://travis-ci.org/scala/scala-partest) [<img src="https://img.shields.io/maven-central/v/org.scala-lang.modules/scala-partest_2.11.svg?label=latest%20release%20for%202.11"/>](http://search.maven.org/#search%7Cga%7C1%7Cg%3Aorg.scala-lang.modules%20a%3Ascala-partest_2.11) [<img src="https://img.shields.io/maven-central/v/org.scala-lang.modules/scala-partest_2.12*.svg?label=latest%20release%20for%202.12"/>](http://search.maven.org/#search%7Cga%7C1%7Cg%3Aorg.scala-lang.modules%20a%3Ascala-partest_2.12*)
-=============
-
 Partest is the testing framework used to regression-test the Scala compiler and standard library.
+
+## Branches
+
+* Scala 2.11: 1.0.x
+* Scala 2.12: 1.1.x
+* Scala 2.13: not in this repo anymore. has [returned home](https://github.com/scala/scala/pull/6566) to scala/scala, at https://github.com/scala/scala/tree/2.13.x/src/partest/scala/tools/partest
+    * (for a short time there was a 1.2.x branch for 2.13, now abandoned)
+
+## Where tests live
 
 The compiler under test is instantiated by partest to compile the test files (or directories)
 under the test sources directory (`test/files` by default). The test's output is compared against the
