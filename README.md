@@ -1,10 +1,13 @@
 Partest is the testing framework used to regression-test the Scala compiler and standard library.
 
-## Branches
+**NOTE**: As of Scala 2.13, Partest is back in the scala/scala repository. See the history below.
 
-* Scala 2.11: 1.0.x
-* Scala 2.12: 1.1.x
-* Scala 2.13: not in this repo anymore. has [returned home](https://github.com/scala/scala/pull/6566) to scala/scala, at https://github.com/scala/scala/tree/2.13.x/src/partest/scala/tools/partest
+## History
+
+* Initially born in the Scala source repository
+* Scala 2.11: Extracted out, 1.0.x version series
+* Scala 2.12: Upgrade for Scala 2.12, bumped to 1.1.x
+* Scala 2.13: [Folded back](https://github.com/scala/scala/pull/6566) into scala/scala, at https://github.com/scala/scala/tree/2.13.x/src/partest/scala/tools/partest
     * (for a short time there was a 1.2.x branch for 2.13, now abandoned)
 
 ## Where tests live
