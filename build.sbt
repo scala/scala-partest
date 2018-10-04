@@ -7,7 +7,7 @@ name    := "scala-partest"
 version := "1.1.4-SNAPSHOT"
 
 scalaVersionsByJvm in ThisBuild := {
-  val vs = List("2.12.6")
+  val vs = List("2.12.7")
 
   Map(
     8 -> vs.map(_ -> true),
