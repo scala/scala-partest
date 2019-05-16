@@ -7,13 +7,14 @@ name    := "scala-partest"
 version := "1.0.19-SNAPSHOT"
 
 scalaVersionsByJvm in ThisBuild := {
-  val v211 = "2.11.11"
+  val v211 = "2.11.12"
 
   Map(
     6 -> List(v211 -> true),
     7 -> List(v211 -> false),
     8 -> List(v211 -> false),
-    9 -> List(v211 -> false))
+    11 -> List(v211 -> false),
+    12 -> List(v211 -> false))
 }
 
 scalaXmlVersion := {
