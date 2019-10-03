@@ -12,7 +12,9 @@ scalaVersionsByJvm in ThisBuild := {
   Map(
     8 -> vs.map(_ -> true),
     11 -> vs.map(_ -> false),
-    12 -> vs.map(_ -> false))
+    12 -> vs.map(_ -> false),
+    13 -> vs.map(_ -> false),
+    14 -> vs.map(_ -> false))
 }
 
 scalaXmlVersion := "1.0.6"
