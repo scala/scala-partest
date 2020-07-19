@@ -512,27 +512,32 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
     val perGroup = if (testFile.isDirectory) {
       sources.flatMap(f => readOptionsFile(f changeExtension "flags"))
     } else Nil
-    perTest ++ perGroup
+    val perFile  = toolArgsFor(sources)("scalac")
+    perTest ++ perGroup ++ perFile
   }
 
   // inspect sources for tool args
   def toolArgs(tool: String, split: Boolean = true): List[String] =
     toolArgsFor(sources(testFile))(tool, split)
 
-  // inspect given files for tool args
+  // inspect given files for tool args of the form `tool: args`
+  // if args string ends in close comment, drop the `*` `/`
+  // if split, parse the args string as command line.
+  //
   def toolArgsFor(files: List[File])(tool: String, split: Boolean = true): List[String] = {
-    def argsplitter(s: String) = if (split) words(s) filter (_.nonEmpty) else List(s)
     def argsFor(f: File): List[String] = {
-      import scala.util.matching.Regex
-      val p    = new Regex(s"(?:.*\\s)?${tool}:(?:\\s*)(.*)?", "args")
+      import scala.tools.cmd.CommandLineParser.tokenize
       val max  = 10
-      val src  = Path(f).toFile.chars(codec)
+      val tag  = s"$tool:"
+      val endc = "*" + "/"    // be forgiving of /* scalac: ... */
+      def stripped(s: String) = s.substring(s.indexOf(tag) + tag.length).stripSuffix(endc)
+      def argsplitter(s: String) = if (split) tokenize(s) else List(s.trim())
+      val src = Files.lines(f.toPath, codec.charSet)
       val args = try {
-        src.getLines take max collectFirst {
-          case s if (p findFirstIn s).nonEmpty => for (m <- p findFirstMatchIn s) yield m group "args"
-        }
+        val s = src.limit(max).filter(_.contains(tag)).map(stripped).findAny.orElse("")
+        if (s == "") None else Some(s)
       } finally src.close()
-      args.flatten map argsplitter getOrElse Nil
+      args.map(argsplitter).getOrElse(Nil)
     }
     files flatMap argsFor
   }
@@ -570,6 +575,10 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
 
     List(round1, round2).flatten
   }
+
+  def runPosTest(): TestState =
+    if (checkFile.exists) genFail("unexpected check file for pos test (use -Xfatal-warnings with neg test to verify warnings)")
+    else runTestCommon(true)
 
   def runNegTest() = runInContext {
     val rounds = compilationRounds(testFile)
@@ -674,7 +683,7 @@ class Runner(val testFile: File, val suiteRunner: SuiteRunner, val nestUI: NestU
 
     if (kind == "neg" || (kind endsWith "-neg")) runNegTest()
     else kind match {
-      case "pos"          => runTestCommon(true)
+      case "pos"          => runPosTest()
       case "res"          => runResidentTest()
       case "scalap"       => runScalapTest()
       case "script"       => runScriptTest()
